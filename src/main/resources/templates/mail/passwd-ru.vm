@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Восстановление пароля</title>
+</head>
+<body style="padding: 0; margin: 0; background: #FFFFFF; font-family: sans-serif;">
+<table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
+    <tr>
+        <td>
+            <table width="600" border="0" cellspacing="0" cellpadding="0" align="center">
+                <tr>
+                    <td>
+                    	<p>
+                    		<span style="display: inline-block; font-weight: bold; background-color: #00265c; padding: 5px 8px; color: #FFFFFF">Archery</span>
+                    	</p>
+                    	<h3>Восстановление пароля</h3>
+                    	<p>
+                    		Вы пытаетесь восстановить пароль профиля на сайте <a style="color: #0077cc" href="${mail.url}">${mail.site}</a>.<br>
+                        	Для смены пароля перейдите по ссылке ниже:
+                        </p>
+                        <p>
+                        	<a href="${mail.url}/security/passwd/confirm/${message.token}" style="color: #0077cc">${mail.url}/security/passwd/confirm/${message.token}</a>
+						</p>
+                    	<p>
+                            Ваши друзья,
+                        </p>
+                        <p>
+                            Команда Archery<br>
+                            <a href="mailto:${mail.email}" style="color: #0077cc">${mail.email}</a>
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

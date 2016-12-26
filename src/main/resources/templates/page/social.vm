@@ -1,0 +1,9 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+    <script src="//ulogin.ru/js/ulogin.js"></script>
+	<div id="uLogin" data-ulogin="display=small;theme=classic;fields=first_name,last_name;providers=${settings.providers};hidden=other;redirect_uri=${settings.redirectUri};mobilebuttons=0;"></div>
+</body>
+</html>

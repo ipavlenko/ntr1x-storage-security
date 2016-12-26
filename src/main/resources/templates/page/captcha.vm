@@ -1,0 +1,19 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+<body>
+    <form action="?" method="POST">
+        <div class="g-recaptcha" data-sitekey="${settings.key}"></div>
+        <br/>
+        <input type="submit" value="Submit">
+    </form>
+    <div style="font-size: x-small; padding: 10px; border: 1px solid #F0F0F0; display: inline-block;" id="token"></div>
+    <script>
+    	setInterval(function() {
+    		document.querySelector('#token').innerText = document.querySelector('textarea').value
+    	}, 500)
+    </script>
+</body>
+</html>
