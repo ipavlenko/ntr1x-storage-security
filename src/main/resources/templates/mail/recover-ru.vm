@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Пароль изменён</title>
+    <title>Восстановление пароля</title>
 </head>
 <body style="padding: 0; margin: 0; background: #FFFFFF; font-family: sans-serif;">
 <table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
@@ -14,11 +14,14 @@
                     	<p>
                     		<span style="display: inline-block; font-weight: bold; background-color: #00265c; padding: 5px 8px; color: #FFFFFF">Archery</span>
                     	</p>
-                    	<h3>Пароль изменён</h3>
+                    	<h3>Восстановление пароля</h3>
                     	<p>
-                    		Ваш пароль на сайте <a style="color: #0077cc" href="${mail.url}">${mail.site}</a><br>
-                    		был изменён.<br>
+                    		Вы пытаетесь восстановить пароль профиля на сайте <a style="color: #0077cc" href="${mail.url}">${mail.site}</a>.<br>
+                        	Для смены пароля перейдите по ссылке ниже:
                         </p>
+                        <p>
+                        	<a href="${mail.url}/security/passwd/confirm/${message.token}" style="color: #0077cc">${mail.url}/security/passwd/confirm/${message.token}</a>
+						</p>
                     	<p>
                             Ваши друзья,
                         </p>

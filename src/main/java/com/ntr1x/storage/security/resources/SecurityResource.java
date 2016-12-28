@@ -52,7 +52,7 @@ import io.swagger.annotations.Api;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
-@Path("security")
+@Path("/security")
 @Api("Security")
 @PermitAll
 @Component
@@ -230,15 +230,15 @@ public class SecurityResource {
     }
     
     @POST
-    @Path("/passwd")
+    @Path("/forgot")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public ForgotResponse passwd(@Valid ForgotRequest passwd) {
+    public ForgotResponse forgot(@Valid ForgotRequest forgot) {
     	
-    	passwd.email = passwd.email.toLowerCase();
+    	forgot.email = forgot.email.toLowerCase();
     	
-    	User user = users.select("local", null, passwd.email);
+    	User user = users.select("local", null, forgot.email);
     	
     	if (user == null) {
         	throw new BadRequestException("No such user");
@@ -255,9 +255,9 @@ public class SecurityResource {
         }
 
     	async.submit(() -> {
-    		mail.sendPasswdConfirmation(
+    		mail.sendRecoverConfirmation(
 				Lang.en,
-	            new IMailService.PasswdMessage(
+	            new IMailService.PasswdConfirmation(
 	        		user.getEmail(),
 	        		ConversionUtils.BASE62.encode(
                         security.encrypt(
@@ -278,10 +278,10 @@ public class SecurityResource {
     }
     
     @GET
-    @Path("/passwd/confirm/{key}")
+    @Path("/forgot/confirm/{key}")
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public SigninResponse doPasswdConfirm(@PathParam("key") String key) {
+    public SigninResponse doForgotConfirm(@PathParam("key") String key) {
 
         ISecurityService.SecurityToken st = security.parseToken(
             security.decrypt(
@@ -427,7 +427,7 @@ public class SecurityResource {
         async.submit(() -> {
 	        mail.sendSignupConfirmation(
         		Lang.en,
-	            new IMailService.SignupMessage(
+	            new IMailService.SignupConfirmation(
             		u.getEmail(),
             		ConversionUtils.BASE62.encode(
                         security.encrypt(

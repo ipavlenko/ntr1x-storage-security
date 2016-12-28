@@ -7,6 +7,7 @@ import javax.inject.Provider;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
@@ -35,11 +36,11 @@ import io.swagger.annotations.Api;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
-@Path("me")
 @Api("Me")
 @PermitAll
+@Path("/me/profile")
 @Component
-public class MeResource {
+public class SecurityMe {
 	
 	@Inject
 	private EntityManager em;
@@ -52,9 +53,6 @@ public class MeResource {
 	
 	@Inject
     private IMailService mail;
-    
-//	@Inject
-//    private IUserService users;
 	
 	@Inject
     private IAsyncService async;
@@ -88,64 +86,51 @@ public class MeResource {
     }
 	
 	@PUT
-	@Path("/password1")
+	@Path("/recover")
 	@Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
 	@RolesAllowed({ "auth" })
 	@Transactional
-    public User passwdToken(@HeaderParam("X-Captcha") String captcha, @Valid PasswdTokenRequest passwd) {
+    public User recover(@Valid PasswdTokenRequest passwd) {
 		
-		// TODO Implement
+		User persisted = em.find(User.class, session.get().getUser().getId());
 		
-//		User persisted = em.find(User.class, session.get().getUser().getId());
-//		
-//		if (passwd.token != null) {
-//			
-//			ISecurityService.SecurityToken st = security.parseToken(
-//	            security.decrypt(
-//	                ConversionUtils.BASE62.decode(passwd.token)
-//	            )
-//	        );
-//
-//	        Token token = em.find(Token.class, st.id);
-//	        
-//	        if (token.getType() != Token.PASSWD || token.getUser().getId() != persisted.getId()) {
-//	        	throw new AppException(Status.INVALID_TOKEN);
-//	        }
-//	        
-//	        em.remove(token);
-//			
-//		} else {
-//			
-//			if (!persisted.getPwdhash().equals(security.hashPassword(persisted.getRandom(), passwd.password))) {
-//				throw new AppException(Status.WRONG_CREDENTIALS);
-//			}
-//		}
-//		
-//		int random = security.randomInt();
-//		
-//		persisted.setPwdhash(security.hashPassword(random, passwd.newPassword));
-//		persisted.setRandom(random);
-//		
-//		em.persist(persisted);
-//		em.flush();
-//		
-//    	async.submit(() -> {
-//    		mail.sendPasswdNotification(
-//	            new IMailService.PasswdNotification(
-//	        		persisted.getEmail(),
-//	        		passwd.lang
-//	            )
-//	        );
-//    	});
-//		
-//		return persisted;
+		ISecurityService.SecurityToken st = security.parseToken(
+            security.decrypt(
+                ConversionUtils.BASE62.decode(passwd.token)
+            )
+        );
+
+        Token token = em.find(Token.class, st.id);
+        
+        if (token.getType() != Token.PASSWD || token.getUser().getId() != persisted.getId()) {
+        	throw new BadRequestException("Invalid token");
+        }
+        
+        em.remove(token);
 		
-		return null;
+		int random = security.randomInt();
+		
+		persisted.setPwdhash(security.hashPassword(random, passwd.newPassword));
+		persisted.setRandom(random);
+		
+		em.persist(persisted);
+		em.flush();
+		
+    	async.submit(() -> {
+    		mail.sendPasswdNotification(
+				Lang.en,
+				new IMailService.PasswdNotification(
+	        		persisted.getEmail()
+	            )
+	        );
+    	});
+		
+		return persisted;
 	}
 	
 	@PUT
-	@Path("/password")
+	@Path("/passwd")
 	@Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
 	@RolesAllowed({ "auth" })
@@ -212,7 +197,7 @@ public class MeResource {
     	async.submit(() -> {
     		mail.sendEmailConfirmation(
 				Lang.en,
-	            new IMailService.EmailMessage(
+	            new IMailService.EmailConfirmation(
 	        		user.getEmailNew(),
 	        		ConversionUtils.BASE62.encode(
                         security.encrypt(
