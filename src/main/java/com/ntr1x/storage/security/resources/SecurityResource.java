@@ -220,15 +220,15 @@ public class SecurityResource {
     }
     
     @POST
-    @Path("/forgot")
+    @Path("/recover")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public ForgotResponse forgot(@Valid ForgotRequest forgot) {
+    public RecoverResponse recover(@Valid RecoverRequest recover) {
     	
-    	forgot.email = forgot.email.toLowerCase();
+    	recover.email = recover.email.toLowerCase();
     	
-    	User user = users.select("local", null, forgot.email);
+    	User user = users.select("local", null, recover.email);
     	
     	if (user == null) {
         	throw new BadRequestException("No such user");
@@ -264,14 +264,14 @@ public class SecurityResource {
 	        );
     	});
     	
-    	return new ForgotResponse();
+    	return new RecoverResponse();
     }
     
     @GET
-    @Path("/forgot/confirm/{key}")
+    @Path("/recover/confirm/{key}")
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public SigninResponse doForgotConfirm(@PathParam("key") String key) {
+    public SigninResponse doRecoverConfirm(@PathParam("key") String key) {
 
         ISecurityService.SecurityToken st = security.parseToken(
             security.decrypt(
@@ -600,7 +600,7 @@ public class SecurityResource {
     @XmlRootElement
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class ForgotRequest {
+    public static class RecoverRequest {
         
     	@NotEmpty @Email
         public String email;
@@ -609,6 +609,6 @@ public class SecurityResource {
     @XmlRootElement
     @NoArgsConstructor
 //    @AllArgsConstructor
-    public static class ForgotResponse {
+    public static class RecoverResponse {
     }
 }
