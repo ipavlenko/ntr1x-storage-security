@@ -17,11 +17,11 @@ public class GrantService implements IGrantService {
     
     
     @Override
-    public void createGrants(User user, CreateGrant[] grants) {
+    public void createGrants(User user, RelatedGrant[] grants) {
         
         if (grants != null) {
             
-            for (CreateGrant p : grants) {
+            for (RelatedGrant p : grants) {
                 
                 Grant v = new Grant(); {
                     
@@ -38,11 +38,11 @@ public class GrantService implements IGrantService {
     }
 
     @Override
-    public void updateGrants(User user, UpdateGrant[] grants) {
+    public void updateGrants(User user, RelatedGrant[] grants) {
         
         if (grants != null) {
             
-            for (UpdateGrant p : grants) {
+            for (RelatedGrant p : grants) {
                 
                 switch (p.action) {
                 

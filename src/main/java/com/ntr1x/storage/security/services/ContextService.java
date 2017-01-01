@@ -5,7 +5,6 @@ import java.security.Principal;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
-import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotAuthorizedException;
 
 import org.apache.commons.lang.text.StrSubstitutor;
@@ -44,10 +43,6 @@ public class ContextService implements IContextService {
             || principal.session.getUser() == null
         ) {
         	throw new NotAuthorizedException("No active session");
-        }
-        
-        if (!principal.session.getUser().isEmailConfirmed()) {
-        	throw new ForbiddenException("Account is not confirmed");
         }
             
         switch (role) {

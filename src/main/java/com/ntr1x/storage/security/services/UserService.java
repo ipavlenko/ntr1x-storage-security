@@ -43,6 +43,7 @@ public class UserService implements IUserService {
             u.setPwdhash(security.hashPassword(random, create.password));
             u.setRandom(random);
             u.setName(create.name);
+            u.setEmailConfirmed(create.emailConfirmed);
             u.setRegistered(LocalDateTime.now());
             
             em.persist(u);
@@ -50,7 +51,7 @@ public class UserService implements IUserService {
             
             security.register(u, ResourceUtils.alias(null, "users/i", u));
             
-            grants.createGrants(u, create.grants);
+            grants.createGrants(u, create.grants == null ? null : create.grants);
         }
         
         em.refresh(u);

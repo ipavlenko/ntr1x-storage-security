@@ -87,7 +87,6 @@ public class User extends Resource {
 	
 	@ResourceRelation
 	@XmlElement
-	@XmlInverseReference(mappedBy = "user")
 	@OneToMany(mappedBy = "user")
 	@CascadeOnDelete
 	@ApiModelProperty(hidden = true)
@@ -95,7 +94,6 @@ public class User extends Resource {
 	
 	@ResourceRelation
     @XmlElement
-    @XmlInverseReference(mappedBy = "user")
     @OneToMany(mappedBy = "user")
     @CascadeOnDelete
     @ApiModelProperty(hidden = true)

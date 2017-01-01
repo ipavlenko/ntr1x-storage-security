@@ -10,23 +10,13 @@ import lombok.NoArgsConstructor;
 
 public interface IGrantService {
     
-    void createGrants(User user, CreateGrant[] grants);
-
-    void updateGrants(User user, UpdateGrant[] grants);
+    void createGrants(User user, RelatedGrant[] grants);
+    void updateGrants(User user, RelatedGrant[] grants);
     
     @XmlRootElement
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class CreateGrant {
-        
-        public String pattern;
-        public String allow;
-    }
-    
-    @XmlRootElement
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class UpdateGrant {
+    public static class RelatedGrant {
         
         public Long id;
         public String pattern;

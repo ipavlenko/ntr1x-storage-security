@@ -1,7 +1,5 @@
 package com.ntr1x.storage.security.resources;
 
-import java.time.LocalDateTime;
-
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
@@ -25,9 +23,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
-import org.glassfish.jersey.moxy.json.MoxyJsonFeature;
-import org.glassfish.jersey.moxy.xml.MoxyXmlFeature;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -45,8 +42,8 @@ import com.ntr1x.storage.security.model.ISession;
 import com.ntr1x.storage.security.model.Session;
 import com.ntr1x.storage.security.model.Token;
 import com.ntr1x.storage.security.model.User;
-import com.ntr1x.storage.security.repository.UserRepository;
 import com.ntr1x.storage.security.services.ISecurityService;
+import com.ntr1x.storage.security.services.IUserService;
 
 import io.swagger.annotations.Api;
 import lombok.AllArgsConstructor;
@@ -62,7 +59,7 @@ public class SecurityResource {
     private EntityManager em;
     
     @Inject
-    private UserRepository users;
+    private IUserService users;
     
     @Inject
     private ISecurityService security;
@@ -165,8 +162,7 @@ public class SecurityResource {
     	
     	ULogin ulogin = ClientBuilder.newClient()
             .register(ConverterProvider.class)
-            .register(MoxyXmlFeature.class)
-            .register(MoxyJsonFeature.class)
+            .register(JacksonFeature.class)
             .register(MultiPartFeature.class)
             .target(String.format("http://ulogin.ru/token.php"))
             .queryParam("token", token)
@@ -184,23 +180,17 @@ public class SecurityResource {
     	
     	if (u == null) {
     		
-    		u = new User(); {
-                
-                int random = security.randomInt();
-                
-                u.setIdentity(ulogin.identity);
-                u.setOrigin(ulogin.network);
-                u.setEmail("");
-                
-                u.setName(String.format("%s %s", ulogin.name, ulogin.surname));
-                u.setRandom(random);
-                u.setPwdhash(null);
-                u.setRegistered(LocalDateTime.now());
-                u.setEmailConfirmed(true);
-                
-                em.persist(u);
-                em.flush();
-            }
+    		u = users.create(
+				new IUserService.CreateUser(
+    				ulogin.network,
+    				ulogin.identity,
+    				"",
+    				null,
+    				String.format("%s %s", ulogin.name, ulogin.surname),
+    				false,
+    				null
+				)
+			);
     	}
         
         Session session = new Session(); {
@@ -397,22 +387,7 @@ public class SecurityResource {
     		throw new BadRequestException("User exists");
     	}
 
-        User u = new User(); {
-            
-            int random = security.randomInt();
-            
-            u.setOrigin("local");
-            u.setIdentity("");
-            
-            u.setEmail(signup.email);
-            u.setName(signup.name);
-            u.setRandom(random);
-            u.setPwdhash(security.hashPassword(random, signup.password));
-            u.setEmailConfirmed(false);
-        
-            em.persist(u);
-            em.flush();
-        }
+    	User u = users.create(new IUserService.CreateUser("local", "", signup.email, signup.password, signup.name, false, null));
         
         Token token =  new Token(); {
             

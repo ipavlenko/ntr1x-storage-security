@@ -13,7 +13,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.eclipse.persistence.annotations.CascadeOnDelete;
-import org.eclipse.persistence.oxm.annotations.XmlInverseReference;
 
 import com.ntr1x.storage.core.model.Resource;
 
@@ -36,7 +35,6 @@ import lombok.Setter;
 public class Session extends Resource implements ISession {
     
     @XmlElement
-    @XmlInverseReference(mappedBy = "sessions")
     @ManyToOne
     @JoinColumn(name = "UserId", nullable = false, updatable = false)
     private User user;

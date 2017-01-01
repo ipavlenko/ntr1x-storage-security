@@ -37,16 +37,10 @@ public interface IUserService {
     	public String email;
         public String password;
         public String name;
-        public String phone;
-        public String profile;
-        public boolean confirmed;
-        
-    	@XmlJavaTypeAdapter(LocalDateConverter.class)
-    	@ApiModelProperty(example="1985-10-24")
-        public LocalDate birth;
+        public boolean emailConfirmed;
         
         @XmlElement
-        public IGrantService.CreateGrant[] grants;
+        public GrantService.RelatedGrant[] grants;
     }
     
     @XmlRootElement
@@ -59,8 +53,6 @@ public interface IUserService {
     	public String email;
         public String password;
         public String name;
-        public String phone;
-        public String profile;
         public boolean confirmed;
         
     	@XmlJavaTypeAdapter(LocalDateConverter.class)
@@ -68,6 +60,6 @@ public interface IUserService {
         public LocalDate birth;
         
         @XmlElement
-        public IGrantService.UpdateGrant[] grants;
+        public IGrantService.RelatedGrant[] grants;
     }
 }
