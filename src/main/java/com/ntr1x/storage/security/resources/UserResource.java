@@ -17,14 +17,15 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
-import com.ntr1x.storage.core.transport.PageResponse;
 import com.ntr1x.storage.core.transport.PageableQuery;
 import com.ntr1x.storage.security.model.User;
 import com.ntr1x.storage.security.services.IUserService;
 import com.ntr1x.storage.security.services.IUserService.CreateUser;
 import com.ntr1x.storage.security.services.IUserService.UpdateUser;
+import com.ntr1x.storage.security.services.IUserService.UserPageResponse;
 
 import io.swagger.annotations.Api;
 
@@ -45,11 +46,17 @@ public class UserResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
     @RolesAllowed({ "res:///users:admin" })
-    public PageResponse<User> list(
+    public UserPageResponse list(
     	@BeanParam PageableQuery pageable
     ) {
-        return new PageResponse<>(
-        	users.query(pageable.toPageRequest())
+    	
+    	Page<User> p = users.query(pageable.toPageRequest());
+    	
+        return new UserPageResponse(
+    		p.getTotalElements(),
+    		p.getNumber(),
+    		p.getSize(),
+    		p.getContent()
 		);
     }
 

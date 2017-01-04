@@ -1,6 +1,7 @@
 package com.ntr1x.storage.security.services;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -27,6 +28,19 @@ public interface IUserService {
     User select(long id);
     User select(String origin, String identity, String email);
 
+    @XmlRootElement
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UserPageResponse {
+
+    	public long count;
+        public int page;
+        public int size;
+
+        @XmlElement
+        public List<User> content;
+	}
+    
     @XmlRootElement
     @NoArgsConstructor
     @AllArgsConstructor
