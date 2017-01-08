@@ -36,9 +36,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 	@Inject
 	private ISessionService sessions;
 	
-	@Inject
-	private javax.inject.Provider<IUserScope> scope;
-	
 	@Override
 	@Transactional
 	public void filter(ContainerRequestContext rc) { 
@@ -47,12 +44,14 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 			return;
 		}
 		
-		UserPrincipal principal = setupUserPrincipal(rc);
+		IUserScope scope = (IUserScope) request.getAttribute(IUserScope.class.getName());
+		
+		UserPrincipal principal = setupUserPrincipal(rc, scope);
 
 		request.setAttribute(IUserPrincipal.class.getName(), principal);
 	}
 	
-	private UserPrincipal setupUserPrincipal(ContainerRequestContext rc) {
+	private UserPrincipal setupUserPrincipal(ContainerRequestContext rc, IUserScope scope) {
 
 		try {
 
@@ -62,7 +61,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 			    
 				ISecurityService.SecuritySession parsed = security.parseSession(value);
 
-				Session session = sessions.select(scope.get().getId(), parsed.getId());
+				Session session = sessions.select(scope.getId(), parsed.getId());
 				
 				if (session != null && session.getSignature() == parsed.getSignature()) {
 
