@@ -1,6 +1,8 @@
 package com.ntr1x.storage.security.services;
 
 import com.ntr1x.storage.core.model.Resource;
+import com.ntr1x.storage.security.model.Session;
+import com.ntr1x.storage.security.model.Token;
 import com.ntr1x.storage.security.model.User;
 
 import lombok.Data;
@@ -26,6 +28,9 @@ public interface ISecurityService {
     boolean isUserInRole(User user, String resource, String action);
     void grant(User user, String pattern, String action);
     void register(Resource resource, String alias);
+    
+    Session selectSession(Long scope, long id);
+    Token selectToken(Long scope, long id);
     
     @Data
     class SecurityToken {

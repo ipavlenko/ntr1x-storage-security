@@ -32,7 +32,7 @@ import lombok.Setter;
 @CascadeOnDelete
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Session extends Resource implements ISession {
+public class Session extends Resource {
     
     @XmlElement
     @ManyToOne

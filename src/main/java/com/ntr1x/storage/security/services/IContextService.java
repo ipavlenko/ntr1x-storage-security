@@ -1,6 +1,5 @@
 package com.ntr1x.storage.security.services;
 
-import java.security.Principal;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -9,10 +8,12 @@ import java.util.Map.Entry;
 
 import javax.ws.rs.core.UriInfo;
 
+import com.ntr1x.storage.security.filters.IUserPrincipal;
+
 public interface IContextService {
 
     boolean isUserInRole(UriInfoState info, String role);
-    Principal getUserPrincipal();
+    IUserPrincipal getUserPrincipal();
     
     /**
      * UriInfo is mutable, UriInfoState stores relevant UriInfo

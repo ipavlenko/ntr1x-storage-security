@@ -19,8 +19,12 @@ import com.ntr1x.storage.core.utils.ConversionUtils;
 import com.ntr1x.storage.core.utils.CryptoUtils;
 import com.ntr1x.storage.security.converter.EncryptedConverter;
 import com.ntr1x.storage.security.model.Grant;
+import com.ntr1x.storage.security.model.Session;
+import com.ntr1x.storage.security.model.Token;
 import com.ntr1x.storage.security.model.User;
 import com.ntr1x.storage.security.repository.GrantRepository;
+import com.ntr1x.storage.security.repository.SessionRepository;
+import com.ntr1x.storage.security.repository.TokenRepository;
 
 @Service
 public class SecurityService implements ISecurityService {
@@ -33,6 +37,12 @@ public class SecurityService implements ISecurityService {
     
     @Inject
     private GrantRepository grants;
+    
+    @Inject
+    private SessionRepository sessions;
+    
+    @Inject
+    private TokenRepository tokens;
     
     private final Random random = new Random();
     
@@ -49,6 +59,16 @@ public class SecurityService implements ISecurityService {
     private void init() {
         key = ConversionUtils.BASE64.decode(config.key);
         EncryptedConverter.setSecurityService(this);
+    }
+    
+    @Override
+    public Session selectSession(Long scope, long id) {
+    	return sessions.select(scope, id);
+    }
+    
+    @Override
+    public Token selectToken(Long scope, long id) {
+    	return tokens.select(scope, id);
     }
     
     @Override
@@ -217,6 +237,7 @@ public class SecurityService implements ISecurityService {
         
         Grant grant = new Grant(); {
             
+        	grant.setScope(user.getScope());
             grant.setUser(user);
             grant.setPattern(pattern);
             grant.setAction(action);
@@ -227,7 +248,7 @@ public class SecurityService implements ISecurityService {
         
 //        grant.setAlias(ResourceUtils.alias(user, "grants/i", grant));
         
-        em.merge(grant);
-        em.flush();
+//        em.merge(grant);
+//        em.flush();
     }
 }

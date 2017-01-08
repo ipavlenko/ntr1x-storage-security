@@ -21,7 +21,17 @@ public class CORSResponseFilter implements ContainerResponseFilter {
         responseContext.getHeaders().putSingle("Access-Control-Allow-Origin", "*");
         responseContext.getHeaders().putSingle("Access-Control-Allow-Credentials", "true");
         responseContext.getHeaders().putSingle("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT");
-        responseContext.getHeaders().putSingle("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization, X-Captcha, X-Forwarded-Host");
+        
+        responseContext.getHeaders().putSingle("Access-Control-Allow-Headers",
+    		String.join(", ",
+				"Content-Type",
+				"Accept",
+				"Authorization",
+				"X-Captcha",
+				"X-Forwarded-Host",
+				"X-Client-Host"
+			)
+		);
     }
 	
 }

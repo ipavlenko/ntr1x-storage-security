@@ -1,7 +1,5 @@
 package com.ntr1x.storage.security.services;
 
-import java.security.Principal;
-
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
@@ -12,7 +10,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Service;
 
-import com.ntr1x.storage.security.filters.AuthenticationFilter.UserPrincipal;
+import com.ntr1x.storage.security.filters.IUserPrincipal;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,19 +26,19 @@ public class ContextService implements IContextService {
     private HttpServletRequest request;
 
     @Override
-    public Principal getUserPrincipal() {
-        return (UserPrincipal) request.getAttribute(UserPrincipal.class.getName());
+    public IUserPrincipal getUserPrincipal() {
+        return (IUserPrincipal) request.getAttribute(IUserPrincipal.class.getName());
     }
     
     @Override
     @Transactional
     public boolean isUserInRole(UriInfoState state, String role) {
                 
-        UserPrincipal principal = (UserPrincipal) request.getAttribute(UserPrincipal.class.getName());
+        IUserPrincipal principal = (IUserPrincipal) request.getAttribute(IUserPrincipal.class.getName());
         
         if (principal == null
-            || principal.session == null
-            || principal.session.getUser() == null
+            || principal.getSession() == null
+            || principal.getUser() == null
         ) {
         	throw new NotAuthorizedException("No active session");
         }

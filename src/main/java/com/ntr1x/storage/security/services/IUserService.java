@@ -19,14 +19,14 @@ import lombok.NoArgsConstructor;
 
 public interface IUserService {
     
-    User create(CreateUser user);
-    User update(long id, UpdateUser user);
-    User remove(long id);
+    User create(long scope, UserCreate user);
+    User update(Long scope, long id, UserUpdate user);
+    User remove(Long scope, long id);
 
-    Page<User> query(Pageable pageable);
+    Page<User> query(Long scope, Pageable pageable);
     
-    User select(long id);
-    User select(String origin, String identity, String email);
+    User select(Long scope, long id);
+    User select(long scope, String origin, String identity, String email);
 
     @XmlRootElement
     @NoArgsConstructor
@@ -44,7 +44,7 @@ public interface IUserService {
     @XmlRootElement
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class CreateUser {
+    public static class UserCreate {
         
     	public String origin;
         public String identity;
@@ -60,7 +60,7 @@ public interface IUserService {
     @XmlRootElement
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class UpdateUser {
+    public static class UserUpdate {
         
     	public String origin;
         public String identity;

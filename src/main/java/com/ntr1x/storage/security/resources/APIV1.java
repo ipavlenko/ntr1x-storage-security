@@ -35,7 +35,7 @@ public class APIV1 implements ReaderListener {
     @Override
     public void afterScan(Reader reader, Swagger swagger) {
 
-        ApiKeyAuthDefinition  tokenScheme = new ApiKeyAuthDefinition ();
+        ApiKeyAuthDefinition  tokenScheme = new ApiKeyAuthDefinition();
         tokenScheme.setType("apiKey");
         tokenScheme.setName("Authorization");
         tokenScheme.setIn(In.HEADER);

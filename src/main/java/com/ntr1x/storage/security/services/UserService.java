@@ -30,12 +30,13 @@ public class UserService implements IUserService {
     private ISecurityService security;
     
     @Override
-    public User create(CreateUser create) {
+    public User create(long scope, UserCreate create) {
         
         User u = new User(); {
             
             int random = security.randomInt();
             
+            u.setScope(scope);
             u.setOrigin(create.origin);
             u.setIdentity(create.identity);
             
@@ -60,9 +61,9 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public User update(long id, UpdateUser update) {
+    public User update(Long scope, long id, UserUpdate update) {
         
-        User u = em.find(User.class, id); {
+        User u = users.select(scope, id); {
         
             int random = security.randomInt();
             
@@ -87,9 +88,10 @@ public class UserService implements IUserService {
     }
     
     @Override
-    public User remove(long id) {
+    public User remove(Long scope, long id) {
         
-        User u = em.find(User.class, id); {
+        User u = users.select(scope, id); {
+        	
         	em.remove(u);
         	em.flush();
         }
@@ -98,22 +100,22 @@ public class UserService implements IUserService {
     }
     
     @Override
-    public Page<User> query(Pageable pageable) {
+    public Page<User> query(Long scope, Pageable pageable) {
 
-        return users.findAll(pageable);
+        return users.query(scope, null, null, null, pageable);
     }
 
     @Override
-    public User select(long id) {
+    public User select(Long scope, long id) {
 
-        User user = em.find(User.class, id);
+        User user = users.select(scope, id);
         return user;
     }
 
     @Override
-    public User select(String origin, String identity, String email) {
+    public User select(long scope, String origin, String identity, String email) {
 
-        User user = users.select(origin, identity, email);
+        User user = users.select(scope, origin, identity, email);
         return user;
     }
 }

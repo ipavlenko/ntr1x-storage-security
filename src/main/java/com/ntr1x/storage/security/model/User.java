@@ -37,7 +37,7 @@ import lombok.Setter;
 @Table(
 	name = "users",
 	indexes= {
-		@Index(columnList = "Origin,Identity,Email", unique = true),
+		@Index(columnList = "Scope,Origin,Identity,Email", unique = true),
 	}
 )
 @PrimaryKeyJoinColumn(name = "ResourceId", referencedColumnName = "Id")

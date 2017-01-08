@@ -1,12 +1,9 @@
 package com.ntr1x.storage.security.filters;
 
-import java.io.Serializable;
-import java.security.Principal;
-
 import javax.annotation.Priority;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
+import javax.transaction.Transactional;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -18,9 +15,9 @@ import org.springframework.stereotype.Component;
 import com.ntr1x.storage.security.model.Session;
 import com.ntr1x.storage.security.model.User;
 import com.ntr1x.storage.security.services.ISecurityService;
+import com.ntr1x.storage.security.services.ISessionService;
 
 import io.swagger.models.HttpMethod;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -37,16 +34,25 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 	private ISecurityService security;
 	
 	@Inject
-    private EntityManager em;
+	private ISessionService sessions;
+	
+	@Inject
+	private javax.inject.Provider<IUserScope> scope;
 	
 	@Override
+	@Transactional
 	public void filter(ContainerRequestContext rc) { 
 
 		if (HttpMethod.OPTIONS.equals(rc.getMethod())) {
 			return;
 		}
 		
-		UserPrincipal p  = null;
+		UserPrincipal principal = setupUserPrincipal(rc);
+
+		request.setAttribute(IUserPrincipal.class.getName(), principal);
+	}
+	
+	private UserPrincipal setupUserPrincipal(ContainerRequestContext rc) {
 
 		try {
 
@@ -56,13 +62,14 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 			    
 				ISecurityService.SecuritySession parsed = security.parseSession(value);
 
-				Session session = em.find(Session.class, parsed.getId());
+				Session session = sessions.select(scope.get().getId(), parsed.getId());
 				
 				if (session != null && session.getSignature() == parsed.getSignature()) {
 
 				    User user = session.getUser();
 				    if (user.isEmailConfirmed()) {
-				        p = new UserPrincipal(session);
+				    	
+				        return new UserPrincipal(session);
 				    }
 				}
 			}
@@ -72,26 +79,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 			// ignore
 		}
 
-		if (p == null) {
-			p = new UserPrincipal(null);
-		}
-
-		request.setAttribute(UserPrincipal.class.getName(), p);
-	}
-
-	@Data
-	public static class UserPrincipal implements Principal, Serializable {
-
-		private static final long serialVersionUID = -3538893803387492891L;
-
-		public final Session session;
-
-		@Override
-		public String getName() {
-			return session != null
-				? String.format("%s", session.getUser().getEmail())
-				: "Nobody"
-			;
-		}
+		return new UserPrincipal(null);
 	}
 }

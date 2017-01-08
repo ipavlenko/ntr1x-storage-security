@@ -3,6 +3,7 @@ package com.ntr1x.storage.security.resources;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
@@ -21,11 +22,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import com.ntr1x.storage.core.transport.PageableQuery;
+import com.ntr1x.storage.security.filters.IUserScope;
 import com.ntr1x.storage.security.model.User;
 import com.ntr1x.storage.security.services.IUserService;
-import com.ntr1x.storage.security.services.IUserService.CreateUser;
-import com.ntr1x.storage.security.services.IUserService.UpdateUser;
+import com.ntr1x.storage.security.services.IUserService.UserCreate;
 import com.ntr1x.storage.security.services.IUserService.UserPageResponse;
+import com.ntr1x.storage.security.services.IUserService.UserUpdate;
 
 import io.swagger.annotations.Api;
 
@@ -41,6 +43,9 @@ public class UserResource {
 
     @Inject
     private IUserService users;
+    
+    @Inject
+    private Provider<IUserScope> scope;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -49,8 +54,7 @@ public class UserResource {
     public UserPageResponse list(
     	@BeanParam PageableQuery pageable
     ) {
-    	
-    	Page<User> p = users.query(pageable.toPageRequest());
+    	Page<User> p = users.query(scope.get().getId(), pageable.toPageRequest());
     	
         return new UserPageResponse(
     		p.getTotalElements(),
@@ -67,16 +71,16 @@ public class UserResource {
     @RolesAllowed({ "res:///users/i/{id}:admin" })
     public User select(@PathParam("id") long id) {
         
-        return users.select(id);
+        return users.select(scope.get().getId(), id);
     }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public User create(CreateUser user) {
+    public User create(UserCreate user) {
 
-        return users.create(user);
+        return users.create(scope.get().getId(), user);
 	}
 
 	@PUT
@@ -84,9 +88,9 @@ public class UserResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@Transactional
-	public User update(@PathParam("id") long id, UpdateUser user) {
+	public User update(@PathParam("id") long id, UserUpdate user) {
 	    
-	    return users.update(id, user);
+	    return users.update(scope.get().getId(), id, user);
 	}
 	
 	@DELETE
@@ -96,6 +100,6 @@ public class UserResource {
     @RolesAllowed({ "res:///users/i/{id}:admin" })
     public User remove(@PathParam("id") long id) {
         
-	    return users.remove(id);
+	    return users.remove(scope.get().getId(), id);
     }
 }
