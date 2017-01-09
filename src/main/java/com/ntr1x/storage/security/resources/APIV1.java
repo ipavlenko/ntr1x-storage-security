@@ -17,7 +17,7 @@ import io.swagger.models.auth.In;
 	),
 	schemes = { SwaggerDefinition.Scheme.HTTP, SwaggerDefinition.Scheme.HTTPS },
 	tags = {
-        @Tag(name = "Setup",        	description = "Applciation setup"),
+        @Tag(name = "Media",        	description = "Publications & Events"),
 	    @Tag(name = "Security",     	description = "Registration & Authorization"),
 	    @Tag(name = "Me",				description = "User data accessors"),
 		@Tag(name = "Resources",    	description = "Universal resource access"),

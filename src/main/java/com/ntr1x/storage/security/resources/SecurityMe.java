@@ -23,10 +23,10 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.stereotype.Component;
 
+import com.ntr1x.storage.core.filters.IUserScope;
 import com.ntr1x.storage.core.services.IAsyncService;
 import com.ntr1x.storage.core.services.IMailService;
 import com.ntr1x.storage.core.services.IMailService.Lang;
-import com.ntr1x.storage.security.filters.IUserScope;
 import com.ntr1x.storage.security.filters.IUserPrincipal;
 import com.ntr1x.storage.security.model.Session;
 import com.ntr1x.storage.security.model.Token;

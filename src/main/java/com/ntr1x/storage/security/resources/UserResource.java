@@ -21,8 +21,8 @@ import javax.ws.rs.core.MediaType;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
+import com.ntr1x.storage.core.filters.IUserScope;
 import com.ntr1x.storage.core.transport.PageableQuery;
-import com.ntr1x.storage.security.filters.IUserScope;
 import com.ntr1x.storage.security.model.User;
 import com.ntr1x.storage.security.services.IUserService;
 import com.ntr1x.storage.security.services.IUserService.UserCreate;

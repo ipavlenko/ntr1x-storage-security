@@ -12,6 +12,7 @@ import javax.ws.rs.ext.Provider;
 
 import org.springframework.stereotype.Component;
 
+import com.ntr1x.storage.core.filters.IUserScope;
 import com.ntr1x.storage.security.model.Session;
 import com.ntr1x.storage.security.model.User;
 import com.ntr1x.storage.security.services.ISecurityService;
