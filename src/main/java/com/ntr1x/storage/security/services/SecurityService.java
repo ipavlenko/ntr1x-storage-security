@@ -214,9 +214,10 @@ public class SecurityService implements ISecurityService {
     
     @Transactional
     @Override
-    public boolean isUserInRole(User user, String resource, String action) {
+    public boolean isUserInRole(Long scope, User user, String resource, String action) {
         
         return grants.check(
+    		scope,
             user.getId(),
             resource,
             action
@@ -233,11 +234,11 @@ public class SecurityService implements ISecurityService {
     }
     
     @Override
-    public void grant(User user, String pattern, String action) {
+    public void grant(long scope, User user, String pattern, String action) {
         
         Grant grant = new Grant(); {
             
-        	grant.setScope(user.getScope());
+        	grant.setScope(scope);
             grant.setUser(user);
             grant.setPattern(pattern);
             grant.setAction(action);
@@ -245,10 +246,5 @@ public class SecurityService implements ISecurityService {
         
         em.persist(grant);
         em.flush();
-        
-//        grant.setAlias(ResourceUtils.alias(user, "grants/i", grant));
-        
-//        em.merge(grant);
-//        em.flush();
     }
 }

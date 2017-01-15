@@ -8,12 +8,14 @@ import java.util.Map.Entry;
 
 import javax.ws.rs.core.UriInfo;
 
+import com.ntr1x.storage.core.filters.IUserScope;
 import com.ntr1x.storage.security.filters.IUserPrincipal;
 
 public interface IContextService {
 
     boolean isUserInRole(UriInfoState info, String role);
     IUserPrincipal getUserPrincipal();
+    IUserScope getUserScope();
     
     /**
      * UriInfo is mutable, UriInfoState stores relevant UriInfo

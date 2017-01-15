@@ -25,8 +25,8 @@ public interface ISecurityService {
     SecuritySession parseSession(byte[] bytes);
     SecuritySession parseSession(String session);
     
-    boolean isUserInRole(User user, String resource, String action);
-    void grant(User user, String pattern, String action);
+    boolean isUserInRole(Long scope, User user, String resource, String action);
+    void grant(long scope, User user, String pattern, String action);
     void register(Resource resource, String alias);
     
     Session selectSession(Long scope, long id);

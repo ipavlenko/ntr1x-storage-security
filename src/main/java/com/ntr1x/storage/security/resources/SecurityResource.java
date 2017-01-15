@@ -37,7 +37,6 @@ import com.ntr1x.storage.core.services.IAsyncService;
 import com.ntr1x.storage.core.services.IMailService;
 import com.ntr1x.storage.core.services.IMailService.Lang;
 import com.ntr1x.storage.core.services.IPageService;
-import com.ntr1x.storage.security.filters.IUserPrincipal;
 import com.ntr1x.storage.security.model.Session;
 import com.ntr1x.storage.security.model.Token;
 import com.ntr1x.storage.security.model.User;
@@ -71,9 +70,6 @@ public class SecurityResource {
 
 	@Inject
 	private IPageService pages;
-
-	@Inject
-	private Provider<IUserPrincipal> principal;
 	
 	@Inject
 	private Provider<IUserScope> scope;
@@ -90,9 +86,6 @@ public class SecurityResource {
 
 		signin.email = signin.email.toLowerCase();
 
-		System.out.println(scope.get());
-		System.out.println(principal.get());
-		
 		User u = users.select(scope.get().getId(), "local", null, signin.email.toLowerCase()); {
 
 			if (u == null) {

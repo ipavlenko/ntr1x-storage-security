@@ -63,7 +63,7 @@ public interface IUserService {
     	public String email;
         public String password;
         public String name;
-        public boolean confirmed;
+        public boolean emailConfirmed;
         
         @XmlElement
         public IGrantService.RelatedGrant[] grants;

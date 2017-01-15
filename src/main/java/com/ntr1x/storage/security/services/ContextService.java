@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Service;
 
+import com.ntr1x.storage.core.filters.IUserScope;
 import com.ntr1x.storage.security.filters.IUserPrincipal;
 
 import lombok.RequiredArgsConstructor;
@@ -31,10 +32,17 @@ public class ContextService implements IContextService {
     }
     
     @Override
+    public IUserScope getUserScope() {
+    	return (IUserScope) request.getAttribute(IUserScope.class.getName());
+    }
+    
+    @Override
     @Transactional
     public boolean isUserInRole(UriInfoState state, String role) {
                 
         IUserPrincipal principal = (IUserPrincipal) request.getAttribute(IUserPrincipal.class.getName());
+        IUserScope scope = (IUserScope) request.getAttribute(IUserScope.class.getName());
+        
         
         if (principal == null
             || principal.getSession() == null
@@ -60,7 +68,7 @@ public class ContextService implements IContextService {
                 String resource = name.substring(0, pos);
                 String action = name.substring(pos + 1);
 
-                return security.isUserInRole(principal.getSession().getUser(), resource, action);
+                return security.isUserInRole(scope.getId(), principal.getSession().getUser(), resource, action);
             }
             
             return false;
