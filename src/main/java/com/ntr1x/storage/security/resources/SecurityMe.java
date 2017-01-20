@@ -25,12 +25,12 @@ import org.springframework.stereotype.Component;
 
 import com.ntr1x.storage.core.filters.IUserScope;
 import com.ntr1x.storage.core.services.IAsyncService;
-import com.ntr1x.storage.core.services.IMailService;
-import com.ntr1x.storage.core.services.IMailService.Lang;
+import com.ntr1x.storage.core.services.IMailService.MailScope;
 import com.ntr1x.storage.security.filters.IUserPrincipal;
 import com.ntr1x.storage.security.model.Session;
 import com.ntr1x.storage.security.model.Token;
 import com.ntr1x.storage.security.model.User;
+import com.ntr1x.storage.security.services.ISecurityMailService;
 import com.ntr1x.storage.security.services.ISecurityService;
 import com.ntr1x.storage.security.services.IUserService;
 
@@ -51,7 +51,7 @@ public class SecurityMe {
 	private ISecurityService security;
 
 	@Inject
-	private IMailService mail;
+	private ISecurityMailService mail;
 
 	@Inject
 	private IAsyncService async;
@@ -120,8 +120,15 @@ public class SecurityMe {
 		em.persist(persisted);
 		em.flush();
 
+		MailScope ms = scope.get().get(MailScope.class);
+		
 		async.submit(() -> {
-			mail.sendPasswdNotification(Lang.en, new IMailService.PasswdNotification(persisted.getEmail()));
+			mail.sendPasswdNotification(
+				new ISecurityMailService.PasswdNotification(
+					ms,
+					persisted.getEmail()
+				)
+			);
 		});
 
 		return persisted;
@@ -149,8 +156,15 @@ public class SecurityMe {
 		em.persist(persisted);
 		em.flush();
 
+		MailScope ms = scope.get().get(MailScope.class);
+		
 		async.submit(() -> {
-			mail.sendPasswdNotification(Lang.en, new IMailService.PasswdNotification(persisted.getEmail()));
+			mail.sendPasswdNotification(
+				new ISecurityMailService.PasswdNotification(
+					ms,
+					persisted.getEmail()
+				)
+			);
 		});
 
 		return persisted;
@@ -177,8 +191,7 @@ public class SecurityMe {
 		em.merge(user);
 		em.flush();
 
-		Token token = new Token();
-		{
+		Token token = new Token(); {
 
 			token.setScope(scope.get().getId());
 			token.setUser(user);
@@ -189,9 +202,22 @@ public class SecurityMe {
 			em.flush();
 		}
 
+		MailScope ms = scope.get().get(MailScope.class);
+		
 		async.submit(() -> {
-			mail.sendEmailConfirmation(Lang.en, new IMailService.EmailConfirmation(user.getEmailNew(), security
-					.toString(new ISecurityService.SecurityToken(token.getId(), token.getType(), token.getToken()))));
+			mail.sendEmailConfirmation(
+				new ISecurityMailService.EmailConfirmation(
+					ms,
+					user.getEmailNew(),
+					security.toString(
+						new ISecurityService.SecurityToken(
+							token.getId(),
+							token.getType(),
+							token.getToken()
+						)
+					)
+				)
+			);
 		});
 
 		return new EmailResponse();
@@ -205,8 +231,7 @@ public class SecurityMe {
 	@RolesAllowed({ "auth" })
 	public SignoutResponse signout() {
 
-		Session s = security.selectSession(scope.get().getId(), principal.get().getSession().getId());
-		{
+		Session s = security.selectSession(scope.get().getId(), principal.get().getSession().getId()); {
 
 			em.remove(s);
 			em.flush();

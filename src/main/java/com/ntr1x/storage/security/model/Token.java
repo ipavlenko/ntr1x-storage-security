@@ -25,7 +25,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "users_tokens")
+@Table(name = "tokens")
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 @PrimaryKeyJoinColumn(name = "ResourceId", referencedColumnName = "Id")

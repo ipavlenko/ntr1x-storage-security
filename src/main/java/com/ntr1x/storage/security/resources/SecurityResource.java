@@ -34,12 +34,12 @@ import com.ntr1x.storage.core.converter.ConverterProvider;
 import com.ntr1x.storage.core.filters.IUserScope;
 import com.ntr1x.storage.core.reflection.ResourceUtils;
 import com.ntr1x.storage.core.services.IAsyncService;
-import com.ntr1x.storage.core.services.IMailService;
-import com.ntr1x.storage.core.services.IMailService.Lang;
+import com.ntr1x.storage.core.services.IMailService.MailScope;
 import com.ntr1x.storage.core.services.IPageService;
 import com.ntr1x.storage.security.model.Session;
 import com.ntr1x.storage.security.model.Token;
 import com.ntr1x.storage.security.model.User;
+import com.ntr1x.storage.security.services.ISecurityMailService;
 import com.ntr1x.storage.security.services.ISecurityService;
 import com.ntr1x.storage.security.services.IUserService;
 
@@ -63,7 +63,7 @@ public class SecurityResource {
 	private ISecurityService security;
 
 	@Inject
-	private IMailService mail;
+	private ISecurityMailService mail;
 
 	@Inject
 	private IAsyncService async;
@@ -233,10 +233,12 @@ public class SecurityResource {
 			em.flush();
 		}
 
+		MailScope ms = scope.get().get(MailScope.class);
+		
 		async.submit(() -> {
 			mail.sendRecoverConfirmation(
-				Lang.en,
-				new IMailService.PasswdConfirmation(
+				new ISecurityMailService.PasswdConfirmation(
+					ms,
 					user.getEmail(),
 					security.toString(
 						new ISecurityService.SecurityToken(
@@ -360,10 +362,12 @@ public class SecurityResource {
 			em.flush();
 		}
 
+		MailScope ms = scope.get().get(MailScope.class);
+		
 		async.submit(() -> {
 			mail.sendSignupConfirmation(
-				Lang.en,
-				new IMailService.SignupConfirmation(
+				new ISecurityMailService.SignupConfirmation(
+					ms,
 					u.getEmail(),
 					security.toString(
 						new ISecurityService.SecurityToken(

@@ -29,7 +29,7 @@ import lombok.Setter;
 @Table(
 	name = "grants",
 	indexes= {
-		@Index(columnList = "Pattern, Action", unique = true),
+		@Index(columnList = "UserId, Scope, Pattern, Action", unique = true),
 	}
 )
 @PrimaryKeyJoinColumn(name = "ResourceId", referencedColumnName = "Id")
