@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Email confirmation</title>
+    <title>Password recovery</title>
 </head>
 <body style="padding: 0; margin: 0; background: #FFFFFF; font-family: sans-serif;">
 <table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
@@ -12,22 +12,26 @@
                 <tr>
                     <td>
                     	<p>
-                    		<span style="display: inline-block; font-weight: bold; background-color: #00265c; padding: 5px 8px; color: #FFFFFF">Archery</span>
+                    		<span style="display: inline-block; font-weight: bold; background-color: #00265c; padding: 5px 8px; color: #FFFFFF">
+                    			${server.portal}
+                			</span>
                     	</p>
-                    	<h3>Email confirmation</h3>
+                    	<h3>Password recovery</h3>
                     	<p>
-                    		You are trying to change your email at <a style="color: #0077cc" href="${mail.url}">${mail.site}</a>.<br>
-                        	To update your email, please follow the link below:
+                    		You are trying to recover your password at
+                    		<a style="color: #0077cc" href="${server.url}">${server.portal}</a>.<br>
+                        	To recover your password, please follow the link below:
                         </p>
                         <p>
-                        	<a href="${mail.url}/security/email/confirm/${message.token}" style="color: #0077cc">${mail.url}/security/email/confirm/${message.token}</a>
+                        	<a href="${server.url}/security/recover/confirm/${message.token}" style="color: #0077cc">
+                        		${server.url}/security/recover/confirm/${message.token}
+                    		</a>
 						</p>
                     	<p>
                             Cheers,
                         </p>
                         <p>
-                            Archery Team<br>
-                            <a href="mailto:${mail.email}" style="color: #0077cc">${mail.email}</a>
+                            <a style="color: #0077cc" href="${server.url}">${server.portal}</a>
                         </p>
                     </td>
                 </tr>

@@ -12,22 +12,26 @@
                 <tr>
                     <td>
                     	<p>
-                    		<span style="display: inline-block; font-weight: bold; background-color: #00265c; padding: 5px 8px; color: #FFFFFF">Archery</span>
+                    		<span style="display: inline-block; font-weight: bold; background-color: #00265c; padding: 5px 8px; color: #FFFFFF">
+                    			${server.portal}
+                			</span>
                     	</p>
                     	<h3>Signup confirmation</h3>
                     	<p>
-                    		Thank you for your registration at <a style="color: #0077cc" href="${mail.url}">${mail.site}</a>!<br>
+                    		Thank you for your registration at
+                    		<a style="color: #0077cc" href="${server.url}">${server.portal}</a>!<br>
                         	To activate your account, please follow the link below:
                         </p>
                         <p>
-                        	<a href="${mail.url}/security/signup/confirm/${message.token}" style="color: #0077cc">${mail.url}/security/signup/confirm/${message.token}</a>
+                        	<a href="${server.url}/security/signup/confirm/${message.token}" style="color: #0077cc">
+                        		${server.url}/security/signup/confirm/${message.token}
+                    		</a>
 						</p>
                     	<p>
                             Cheers,
                         </p>
                         <p>
-                            Archery Team<br>
-                            <a href="mailto:${mail.email}" style="color: #0077cc">${mail.email}</a>
+                            <a style="color: #0077cc" href="${server.url}">${server.portal}</a>
                         </p>
                     </td>
                 </tr>

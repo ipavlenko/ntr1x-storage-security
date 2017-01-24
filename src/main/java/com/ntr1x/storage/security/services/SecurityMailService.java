@@ -9,6 +9,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.ImmutableMap;
 import com.ntr1x.storage.core.services.IMailService;
 import com.ntr1x.storage.core.services.IMailService.Template;
 import com.ntr1x.storage.core.services.IRendererService;
@@ -40,7 +41,15 @@ public class SecurityMailService implements ISecurityMailService {
                     helper.setSentDate(new Date());
                     
                     String text = renderer.renderer(template.subject)
-                    	.with("token", message.confirm)
+                		.with("message", ImmutableMap.of(
+                				"token", message.confirm
+        				))
+                    	.with("server", ImmutableMap.of(
+                    		"url", String.format("%s://%s", message.scope.proto, message.scope.host),
+            				"proto", message.scope.proto,
+            				"host", message.scope.host,
+            				"portal", message.scope.portal
+        				))
                     	.render(template.content)
                     ;
                     
@@ -70,7 +79,15 @@ public class SecurityMailService implements ISecurityMailService {
                     helper.setSentDate(new Date());
                     
                     String text = renderer.renderer(template.subject)
-                    	.with("token", message.confirm)
+                		.with("message", ImmutableMap.of(
+            				"token", message.confirm
+        				))
+                    	.with("server", ImmutableMap.of(
+                    		"url", String.format("%s://%s", message.scope.proto, message.scope.host),
+            				"proto", message.scope.proto,
+            				"host", message.scope.host,
+            				"portal", message.scope.portal
+        				))
                     	.render(template.content)
                     ;
                     
@@ -100,6 +117,14 @@ public class SecurityMailService implements ISecurityMailService {
                     helper.setSentDate(new Date());
                     
                     String text = renderer.renderer(template.subject)
+                		.with("message", ImmutableMap.of(
+        				))
+                    	.with("server", ImmutableMap.of(
+                    		"url", String.format("%s://%s", message.scope.proto, message.scope.host),
+            				"proto", message.scope.proto,
+            				"host", message.scope.host,
+            				"portal", message.scope.portal
+        				))
                     	.render(template.content)
                     ;
                     
@@ -129,7 +154,15 @@ public class SecurityMailService implements ISecurityMailService {
                     helper.setSentDate(new Date());
                     
                     String text = renderer.renderer(template.subject)
-                    	.with("token", message.confirm)
+                		.with("message", ImmutableMap.of(
+            				"token", message.confirm
+        				))
+                    	.with("server", ImmutableMap.of(
+                    		"url", String.format("%s://%s", message.scope.proto, message.scope.host),
+            				"proto", message.scope.proto,
+            				"host", message.scope.host,
+            				"portal", message.scope.portal
+        				))
                     	.render(template.content)
                     ;
                     

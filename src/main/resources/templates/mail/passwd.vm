@@ -12,19 +12,21 @@
                 <tr>
                     <td>
                     	<p>
-                    		<span style="display: inline-block; font-weight: bold; background-color: #00265c; padding: 5px 8px; color: #FFFFFF">Archery</span>
+                    		<span style="display: inline-block; font-weight: bold; background-color: #00265c; padding: 5px 8px; color: #FFFFFF">
+                    			${server.portal}
+                			</span>
                     	</p>
                     	<h3>Password updated</h3>
                     	<p>
-                    		You password at <a style="color: #0077cc" href="${mail.url}">${mail.site}</a><br>
-                    		has been successfully updated.<br>
-                        </p>
+                    		You password at
+                    		<a style="color: #0077cc" href="${mail.url}">${mail.site}</a><br>
+                    		has been successfully updated.
+						</p>
                     	<p>
                             Cheers,
                         </p>
                         <p>
-                            Archery Team<br>
-                            <a href="mailto:${mail.email}" style="color: #0077cc">${mail.email}</a>
+                            <a style="color: #0077cc" href="${server.url}">${server.portal}</a>
                         </p>
                     </td>
                 </tr>
