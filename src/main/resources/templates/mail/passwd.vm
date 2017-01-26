@@ -19,7 +19,7 @@
                     	<h3>Password updated</h3>
                     	<p>
                     		You password at
-                    		<a style="color: #0077cc" href="${mail.url}">${mail.site}</a><br>
+                    		<a style="color: #0077cc" href="${server.url}">${server.portal}</a><br>
                     		has been successfully updated.
 						</p>
                     	<p>

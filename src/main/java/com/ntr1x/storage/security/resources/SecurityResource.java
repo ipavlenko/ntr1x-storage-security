@@ -12,21 +12,17 @@ import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
-import org.hibernate.validator.constraints.Email;
-import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -41,6 +37,13 @@ import com.ntr1x.storage.security.model.Token;
 import com.ntr1x.storage.security.model.User;
 import com.ntr1x.storage.security.services.ISecurityMailService;
 import com.ntr1x.storage.security.services.ISecurityService;
+import com.ntr1x.storage.security.services.ISecurityService.PasswdTokenRequest;
+import com.ntr1x.storage.security.services.ISecurityService.RecoverRequest;
+import com.ntr1x.storage.security.services.ISecurityService.RecoverResponse;
+import com.ntr1x.storage.security.services.ISecurityService.SigninRequest;
+import com.ntr1x.storage.security.services.ISecurityService.SigninResponse;
+import com.ntr1x.storage.security.services.ISecurityService.SignupRequest;
+import com.ntr1x.storage.security.services.ISecurityService.SignupResponse;
 import com.ntr1x.storage.security.services.IUserService;
 
 import io.swagger.annotations.Api;
@@ -119,7 +122,7 @@ public class SecurityResource {
 			)
 		);
 
-		return new SigninResponse(token, null, u);
+		return new SigninResponse(token, u);
 	}
 
 	@GET
@@ -204,7 +207,7 @@ public class SecurityResource {
 			)
 		);
 
-		return new SigninResponse(value, null, u);
+		return new SigninResponse(value, u);
 	}
 
 	@POST
@@ -226,7 +229,7 @@ public class SecurityResource {
 
 			token.setScope(scope.get().getId());
 			token.setUser(user);
-			token.setType(Token.SIGNIN);
+			token.setType(Token.RECOVER);
 			token.setToken(security.randomInt());
 
 			em.persist(token);
@@ -253,36 +256,44 @@ public class SecurityResource {
 
 		return new RecoverResponse();
 	}
-
-	@GET
-	@Path("/recover/confirm/{key}")
+	
+	@PUT
+	@Path("/passwd")
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@Transactional
-	public SigninResponse doRecoverConfirm(@PathParam("key") String key) {
+	public SigninResponse passwd(@Valid PasswdTokenRequest passwd) {
+		
+		ISecurityService.SecurityToken st = security.parseToken(passwd.token);
 
-		ISecurityService.SecurityToken st = security.parseToken(key);
+		Token token = security.selectToken(scope.get().getId(), st.id);
 
-		User user = null; {
-
-			Token token = security.selectToken(scope.get().getId(), st.id);
-
-			if (token.getType() != Token.SIGNIN) {
-				throw new BadRequestException("Invalid token");
-			}
-
-			user = token != null && token.getToken() == st.getSignature() ? token.getUser() : null;
-
-			if (user != null) {
-				user.setEmailConfirmed(true);
-				em.merge(user);
-			}
-
-			em.remove(token);
+		if (token.getType() != Token.PASSWD) {
+			throw new BadRequestException("Invalid token");
 		}
 
-		if (user == null) {
-			throw new BadRequestException("No such user");
-		}
+		em.remove(token);
+
+		int random = security.randomInt();
+
+		User user = token.getUser();
+		
+		user.setPwdhash(security.hashPassword(random, passwd.newPassword));
+		user.setRandom(random);
+
+		em.persist(user);
+		em.flush();
+
+		MailScope ms = scope.get().get(MailScope.class);
+		
+		async.submit(() -> {
+			mail.sendPasswdNotification(
+				new ISecurityMailService.PasswdNotification(
+					ms,
+					user.getEmail()
+				)
+			);
+		});
 
 		Session session = new Session(); {
 			
@@ -293,6 +304,40 @@ public class SecurityResource {
 
 		em.persist(session);
 		em.flush();
+
+		String sessionToken = security.toString(
+			new ISecurityService.SecuritySession(
+				session.getId(),
+				session.getSignature()
+			)
+		);
+
+		return new SigninResponse(sessionToken, user);
+	}
+
+	@GET
+	@Path("/recover/confirm/{key}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Transactional
+	public RecoverResponse doRecoverConfirm(@PathParam("key") String key) {
+
+		ISecurityService.SecurityToken st = security.parseToken(key);
+
+		User user = null; {
+			
+			Token token = security.selectToken(scope.get().getId(), st.id);
+	
+			if (token.getType() != Token.RECOVER || token.getToken() != st.getSignature()) {
+				throw new BadRequestException("Invalid token");
+			}
+	
+			user = token.getUser();
+	
+			user.setEmailConfirmed(true);
+			em.merge(user);
+			
+			em.remove(token);
+		}
 
 		Token token = new Token(); {
 
@@ -305,13 +350,6 @@ public class SecurityResource {
 			em.flush();
 		}
 
-		String sessionToken = security.toString(
-			new ISecurityService.SecuritySession(
-				session.getId(),
-				session.getSignature()
-			)
-		);
-
 		String passwdToken = security.toString(
 			new ISecurityService.SecurityToken(
 				token.getId(),
@@ -320,7 +358,7 @@ public class SecurityResource {
 			)
 		);
 
-		return new SigninResponse(sessionToken, passwdToken, user);
+		return new RecoverResponse(passwdToken);
 	}
 	
 	@POST
@@ -424,7 +462,7 @@ public class SecurityResource {
 			)
 		);
 
-		return new SigninResponse(sessionToken, null, user);
+		return new SigninResponse(sessionToken, user);
 	}
 
 	@GET
@@ -439,7 +477,7 @@ public class SecurityResource {
 
 			Token token = security.selectToken(scope.get().getId(), st.id);
 
-			if (token.getType() != Token.UPDATE_EMAIL) {
+			if (token.getType() != Token.EMAIL) {
 				throw new BadRequestException("Invalid token");
 			}
 
@@ -482,72 +520,6 @@ public class SecurityResource {
 			)
 		);
 
-		return new SigninResponse(sessionToken, null, user);
-	}
-
-	@XmlRootElement
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class SigninRequest {
-
-		@NotEmpty
-		@Email
-		public String email;
-
-		@NotEmpty
-		@Length(min = 6)
-		public String password;
-	}
-
-	@NoArgsConstructor
-	@AllArgsConstructor
-	@XmlRootElement
-	@XmlAccessorType(XmlAccessType.FIELD)
-	public static class SigninResponse {
-
-		public String token;
-		public String passwdToken;
-		public User user;
-	}
-
-	@XmlRootElement
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class SignupRequest {
-
-		@NotEmpty
-		@Email
-		public String email;
-
-		@NotEmpty
-		public String name;
-
-		@NotEmpty
-		@Length(min = 6)
-		public String password;
-	}
-
-	@XmlRootElement
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class SignupResponse {
-
-		public User user;
-	}
-
-	@XmlRootElement
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class RecoverRequest {
-
-		@NotEmpty
-		@Email
-		public String email;
-	}
-
-	@XmlRootElement
-	@NoArgsConstructor
-	// @AllArgsConstructor
-	public static class RecoverResponse {
+		return new SigninResponse(sessionToken, user);
 	}
 }

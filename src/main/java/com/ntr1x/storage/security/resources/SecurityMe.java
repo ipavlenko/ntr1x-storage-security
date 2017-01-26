@@ -7,7 +7,6 @@ import javax.inject.Provider;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
@@ -16,11 +15,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.xml.bind.annotation.XmlRootElement;
 
-import org.hibernate.validator.constraints.Email;
-import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.stereotype.Component;
 
 import com.ntr1x.storage.core.filters.IUserScope;
@@ -32,11 +27,14 @@ import com.ntr1x.storage.security.model.Token;
 import com.ntr1x.storage.security.model.User;
 import com.ntr1x.storage.security.services.ISecurityMailService;
 import com.ntr1x.storage.security.services.ISecurityService;
+import com.ntr1x.storage.security.services.ISecurityService.EmailRequest;
+import com.ntr1x.storage.security.services.ISecurityService.EmailResponse;
+import com.ntr1x.storage.security.services.ISecurityService.PasswdRequest;
+import com.ntr1x.storage.security.services.ISecurityService.SignoutResponse;
+import com.ntr1x.storage.security.services.ISecurityService.UpdateRequest;
 import com.ntr1x.storage.security.services.IUserService;
 
 import io.swagger.annotations.Api;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 
 @Api("Me")
 @PermitAll
@@ -88,48 +86,6 @@ public class SecurityMe {
 
 		em.merge(persisted);
 		em.flush();
-
-		return persisted;
-	}
-
-	@PUT
-	@Path("/recover")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	@RolesAllowed({ "auth" })
-	@Transactional
-	public User recover(@Valid PasswdTokenRequest passwd) {
-
-		User persisted = users.select(scope.get().getId(), principal.get().getUser().getId());
-
-		ISecurityService.SecurityToken st = security.parseToken(passwd.token);
-
-		Token token = security.selectToken(scope.get().getId(), st.id);
-
-		if (token.getType() != Token.PASSWD || token.getUser().getId() != persisted.getId()) {
-			throw new BadRequestException("Invalid token");
-		}
-
-		em.remove(token);
-
-		int random = security.randomInt();
-
-		persisted.setPwdhash(security.hashPassword(random, passwd.newPassword));
-		persisted.setRandom(random);
-
-		em.persist(persisted);
-		em.flush();
-
-		MailScope ms = scope.get().get(MailScope.class);
-		
-		async.submit(() -> {
-			mail.sendPasswdNotification(
-				new ISecurityMailService.PasswdNotification(
-					ms,
-					persisted.getEmail()
-				)
-			);
-		});
 
 		return persisted;
 	}
@@ -195,7 +151,7 @@ public class SecurityMe {
 
 			token.setScope(scope.get().getId());
 			token.setUser(user);
-			token.setType(Token.UPDATE_EMAIL);
+			token.setType(Token.EMAIL);
 			token.setToken(security.randomInt());
 
 			em.persist(token);
@@ -238,76 +194,5 @@ public class SecurityMe {
 		}
 
 		return new SignoutResponse();
-	}
-
-	@XmlRootElement
-	@NoArgsConstructor
-	public static class SignoutResponse {
-	}
-
-	@XmlRootElement
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class UpdateRequest {
-
-		@NotEmpty
-		public String name;
-	}
-
-	@XmlRootElement
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class ValidateEmailRequest {
-
-		@NotEmpty
-		public String token;
-	}
-
-	@XmlRootElement
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class PasswdRequest {
-
-		@NotEmpty
-		@Length(min = 6)
-		public String password;
-
-		@NotEmpty
-		@Length(min = 6)
-		public String newPassword;
-
-	}
-
-	@XmlRootElement
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class PasswdTokenRequest {
-
-		@NotEmpty
-		public String token;
-
-		@NotEmpty
-		@Length(min = 6)
-		public String newPassword;
-	}
-
-	@XmlRootElement
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class EmailRequest {
-
-		@NotEmpty
-		@Email
-		public String email;
-
-		@NotEmpty
-		@Length(min = 6)
-		public String password;
-	}
-
-	@XmlRootElement
-	@NoArgsConstructor
-	// @AllArgsConstructor
-	public static class EmailResponse {
 	}
 }
