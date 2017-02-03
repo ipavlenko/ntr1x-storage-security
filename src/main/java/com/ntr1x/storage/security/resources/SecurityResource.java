@@ -50,8 +50,8 @@ import io.swagger.annotations.Api;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
-@Path("/security")
 @Api("Security")
+@Path("/security")
 @PermitAll
 @Component
 public class SecurityResource {

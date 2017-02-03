@@ -32,9 +32,9 @@ import com.ntr1x.storage.security.services.IUserService.UserUpdate;
 import io.swagger.annotations.Api;
 
 
-@Api("Users")
+@Api("Security")
 @Component
-@Path("/users")
+@Path("/security/users")
 @PermitAll
 public class UserResource {
 

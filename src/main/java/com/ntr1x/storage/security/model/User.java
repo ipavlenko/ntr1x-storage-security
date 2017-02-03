@@ -1,18 +1,15 @@
 package com.ntr1x.storage.security.model;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.Index;
-import javax.persistence.OneToMany;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -83,18 +80,4 @@ public class User extends Resource {
 	@Column(name = "Pwdhash")
 	@ApiModelProperty(hidden = true)
 	private String pwdhash;
-	
-	@ResourceRelation
-	@XmlElement
-	@OneToMany(mappedBy = "user")
-	@CascadeOnDelete
-	@ApiModelProperty(hidden = true)
-	private List<Session> sessions;
-	
-	@ResourceRelation
-    @XmlElement
-    @OneToMany(mappedBy = "user")
-    @CascadeOnDelete
-    @ApiModelProperty(hidden = true)
-    private List<Grant> grants;
 }

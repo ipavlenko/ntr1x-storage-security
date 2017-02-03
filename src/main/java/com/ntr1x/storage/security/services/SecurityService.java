@@ -236,6 +236,10 @@ public class SecurityService implements ISecurityService {
     @Override
     public void grant(long scope, User user, String pattern, String action) {
         
+    	if (user == null) {
+    		return;
+    	}
+    	
         Grant grant = new Grant(); {
             
         	grant.setScope(scope);
