@@ -54,29 +54,32 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 	
 	private UserPrincipal setupUserPrincipal(ContainerRequestContext rc, IUserScope scope) {
 
-		try {
-
-			String value = rc.getHeaderString("Authorization");
-
-			if (value != null) {
-			    
-				ISecurityService.SecuritySession parsed = security.parseSession(value);
-
-				Session session = sessions.select(scope.getId(), parsed.getId());
-				
-				if (session != null && session.getSignature() == parsed.getSignature()) {
-
-				    User user = session.getUser();
-				    if (user.isEmailConfirmed()) {
-				    	
-				        return new UserPrincipal(session);
-				    }
+		if (scope != null) {
+		
+			try {
+	
+				String value = rc.getHeaderString("Authorization");
+	
+				if (value != null) {
+				    
+					ISecurityService.SecuritySession parsed = security.parseSession(value);
+	
+					Session session = sessions.select(null, parsed.getId());
+					
+					if (session != null && session.getSignature() == parsed.getSignature()) {
+	
+					    User user = session.getUser();
+					    if (user.isEmailConfirmed()) {
+					    	
+					        return new UserPrincipal(session);
+					    }
+					}
 				}
+	
+			} catch (Exception e) {
+				log.error("{}", e);
+				// ignore
 			}
-
-		} catch (Exception e) {
-			log.error("{}", e);
-			// ignore
 		}
 
 		return new UserPrincipal(null);
