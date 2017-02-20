@@ -12,7 +12,7 @@ public interface GrantRepository extends JpaRepository<Grant, Long> {
         " SELECT COUNT(g.id)"
       + " FROM"
       + "     Grant g"
-      + " WHERE g.scope = :scope"
+      + " WHERE (:scope IS NULL OR g.scope = :scope)"
       + "	AND g.action = :action"
       + "   AND g.user.id = :user"
       + "   AND LOCATE(g.pattern, :resource) = 1"

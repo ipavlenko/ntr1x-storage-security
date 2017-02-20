@@ -12,7 +12,6 @@ import javax.ws.rs.ext.Provider;
 
 import org.springframework.stereotype.Component;
 
-import com.ntr1x.storage.core.filters.IUserScope;
 import com.ntr1x.storage.security.model.Session;
 import com.ntr1x.storage.security.model.User;
 import com.ntr1x.storage.security.services.ISecurityService;
@@ -45,41 +44,38 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 			return;
 		}
 		
-		IUserScope scope = (IUserScope) request.getAttribute(IUserScope.class.getName());
+//		IUserScope scope = (IUserScope) request.getAttribute(IUserScope.class.getName());
 		
-		UserPrincipal principal = setupUserPrincipal(rc, scope);
+		UserPrincipal principal = setupUserPrincipal(rc/*, scope*/);
 
 		request.setAttribute(IUserPrincipal.class.getName(), principal);
 	}
 	
-	private UserPrincipal setupUserPrincipal(ContainerRequestContext rc, IUserScope scope) {
+	private UserPrincipal setupUserPrincipal(ContainerRequestContext rc/*, IUserScope scope*/) {
 
-		if (scope != null) {
-		
-			try {
-	
-				String value = rc.getHeaderString("Authorization");
-	
-				if (value != null) {
-				    
-					ISecurityService.SecuritySession parsed = security.parseSession(value);
-	
-					Session session = sessions.select(null, parsed.getId());
-					
-					if (session != null && session.getSignature() == parsed.getSignature()) {
-	
-					    User user = session.getUser();
-					    if (user.isEmailConfirmed()) {
-					    	
-					        return new UserPrincipal(session);
-					    }
-					}
+		try {
+
+			String value = rc.getHeaderString("Authorization");
+
+			if (value != null) {
+			    
+				ISecurityService.SecuritySession parsed = security.parseSession(value);
+
+				Session session = sessions.select(null, parsed.getId());
+				
+				if (session != null && session.getSignature() == parsed.getSignature()) {
+
+				    User user = session.getUser();
+				    if (user.isEmailConfirmed()) {
+				    	
+				        return new UserPrincipal(session);
+				    }
 				}
-	
-			} catch (Exception e) {
-				log.error("{}", e);
-				// ignore
 			}
+
+		} catch (Exception e) {
+			log.error("{}", e);
+			// ignore
 		}
 
 		return new UserPrincipal(null);

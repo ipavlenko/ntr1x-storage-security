@@ -41,7 +41,7 @@ public class ContextService implements IContextService {
     public boolean isUserInRole(UriInfoState state, String role) {
                 
         IUserPrincipal principal = (IUserPrincipal) request.getAttribute(IUserPrincipal.class.getName());
-        IUserScope scope = (IUserScope) request.getAttribute(IUserScope.class.getName());
+//        IUserScope scope = (IUserScope) request.getAttribute(IUserScope.class.getName());
         
         
         if (principal == null
@@ -68,7 +68,7 @@ public class ContextService implements IContextService {
                 String resource = name.substring(0, pos);
                 String action = name.substring(pos + 1);
 
-                return security.isUserInRole(scope.getId(), principal.getSession().getUser(), resource, action);
+                return security.isUserInRole(null, principal.getSession().getUser(), resource, action);
             }
             
             return false;
