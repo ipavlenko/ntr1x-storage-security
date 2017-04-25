@@ -29,22 +29,22 @@ public interface IUserService {
     @AllArgsConstructor
     public static class UserPageResponse {
 
-    	public long count;
+        public long count;
         public int page;
         public int size;
 
         @XmlElement
         public List<User> content;
-	}
+    }
     
     @XmlRootElement
     @NoArgsConstructor
     @AllArgsConstructor
     public static class UserCreate {
         
-    	public String origin;
+        public String origin;
         public String identity;
-    	public String email;
+        public String email;
         public String password;
         public String name;
         public boolean emailConfirmed;
@@ -58,9 +58,9 @@ public interface IUserService {
     @AllArgsConstructor
     public static class UserUpdate {
         
-    	public String origin;
+        public String origin;
         public String identity;
-    	public String email;
+        public String email;
         public String password;
         public String name;
         public boolean emailConfirmed;

@@ -10,48 +10,48 @@ import com.ntr1x.storage.security.model.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-	@Query(
+    @Query(
         " SELECT u"
       + " FROM"
       + "     User u"
       + " WHERE (:scope IS NULL OR u.scope = :scope)"
-      + "	AND (u.id = :id)"
+      + "    AND (u.id = :id)"
     )
     User select(
-		@Param("scope") Long scope,
-		@Param("id") long id
-	);
-	
-	@Query(
+        @Param("scope") Long scope,
+        @Param("id") long id
+    );
+    
+    @Query(
         " SELECT u"
       + " FROM"
       + "     User u"
       + " WHERE (:scope IS NULL OR u.scope = :scope)"
-      + "	AND (:origin IS NULL OR u.origin = :origin)"
+      + "    AND (:origin IS NULL OR u.origin = :origin)"
       + "   AND (:identity IS NULL OR u.identity = :identity)"
       + "   AND (:email IS NULL OR u.email = :email)"
     )
     User select(
-		@Param("scope") long scope,
-		@Param("origin") String origin,
-		@Param("identity") String identity,
-		@Param("email") String email
-	);
-	
-	@Query(
+        @Param("scope") long scope,
+        @Param("origin") String origin,
+        @Param("identity") String identity,
+        @Param("email") String email
+    );
+    
+    @Query(
         " SELECT u"
       + " FROM"
       + "     User u"
       + " WHERE (:scope IS NULL OR u.scope = :scope)"
-      + "	AND (:origin IS NULL OR u.origin = :origin)"
+      + "    AND (:origin IS NULL OR u.origin = :origin)"
       + "   AND (:identity IS NULL OR u.identity = :identity)"
       + "   AND (:email IS NULL OR u.email = :email)"
     )
     Page<User> query(
-		@Param("scope") Long scope,
-		@Param("origin") String origin,
-		@Param("identity") String identity,
-		@Param("email") String email,
-		Pageable pageable
-	);
+        @Param("scope") Long scope,
+        @Param("origin") String origin,
+        @Param("identity") String identity,
+        @Param("email") String email,
+        Pageable pageable
+    );
 }

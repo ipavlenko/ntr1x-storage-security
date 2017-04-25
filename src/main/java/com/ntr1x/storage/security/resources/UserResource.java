@@ -52,16 +52,16 @@ public class UserResource {
     @Transactional
     @RolesAllowed({ "res:///users:admin" })
     public UserPageResponse list(
-    	@BeanParam PageableQuery pageable
+        @BeanParam PageableQuery pageable
     ) {
-    	Page<User> p = users.query(scope.get().getId(), pageable.toPageRequest());
-    	
+        Page<User> p = users.query(scope.get().getId(), pageable.toPageRequest());
+        
         return new UserPageResponse(
-    		p.getTotalElements(),
-    		p.getNumber(),
-    		p.getSize(),
-    		p.getContent()
-		);
+            p.getTotalElements(),
+            p.getNumber(),
+            p.getSize(),
+            p.getContent()
+        );
     }
 
     @GET
@@ -81,25 +81,25 @@ public class UserResource {
     public User create(UserCreate user) {
 
         return users.create(scope.get().getId(), user);
-	}
+    }
 
-	@PUT
-	@Path("/i/{id}")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	@Transactional
-	public User update(@PathParam("id") long id, UserUpdate user) {
-	    
-	    return users.update(scope.get().getId(), id, user);
-	}
-	
-	@DELETE
+    @PUT
+    @Path("/i/{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public User update(@PathParam("id") long id, UserUpdate user) {
+        
+        return users.update(scope.get().getId(), id, user);
+    }
+    
+    @DELETE
     @Path("/i/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
     @RolesAllowed({ "res:///users/i/{id}:admin" })
     public User remove(@PathParam("id") long id) {
         
-	    return users.remove(scope.get().getId(), id);
+        return users.remove(scope.get().getId(), id);
     }
 }

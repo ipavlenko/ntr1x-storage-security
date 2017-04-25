@@ -91,9 +91,9 @@ public class UserService implements IUserService {
     public User remove(Long scope, long id) {
         
         User u = users.select(scope, id); {
-        	
-        	em.remove(u);
-        	em.flush();
+            
+            em.remove(u);
+            em.flush();
         }
         
         return u;

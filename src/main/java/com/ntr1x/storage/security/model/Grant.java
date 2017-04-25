@@ -27,25 +27,25 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity
 @Table(
-	name = "grants",
-	indexes= {
-		@Index(columnList = "UserId, Scope, Pattern, Action", unique = true),
-	}
+    name = "grants",
+    indexes= {
+        @Index(columnList = "UserId, Scope, Pattern, Action", unique = true),
+    }
 )
 @PrimaryKeyJoinColumn(name = "ResourceId", referencedColumnName = "Id")
 @CascadeOnDelete
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Grant extends Resource {
-	
-	@XmlElement
+    
+    @XmlElement
     @ManyToOne
-	@JoinColumn(name = "UserId", nullable = false, updatable = false)
-	private User user;
-	
-	@Column(name = "Pattern")
-	private String pattern;
-	
-	@Column(name = "Action")
+    @JoinColumn(name = "UserId", nullable = false, updatable = false)
+    private User user;
+    
+    @Column(name = "Pattern")
+    private String pattern;
+    
+    @Column(name = "Action")
     private String action;
 }

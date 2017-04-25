@@ -15,23 +15,23 @@ import javax.ws.rs.ext.Provider;
 @PreMatching
 public class CORSResponseFilter implements ContainerResponseFilter {
 
-	@Override
+    @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
-		
+        
         responseContext.getHeaders().putSingle("Access-Control-Allow-Origin", "*");
         responseContext.getHeaders().putSingle("Access-Control-Allow-Credentials", "true");
         responseContext.getHeaders().putSingle("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT");
         
         responseContext.getHeaders().putSingle("Access-Control-Allow-Headers",
-    		String.join(", ",
-				"Content-Type",
-				"Accept",
-				"Authorization",
-				"X-Captcha",
-				"X-Forwarded-Host",
-				"X-Client-Host"
-			)
-		);
+            String.join(", ",
+                "Content-Type",
+                "Accept",
+                "Authorization",
+                "X-Captcha",
+                "X-Forwarded-Host",
+                "X-Client-Host"
+            )
+        );
     }
-	
+    
 }

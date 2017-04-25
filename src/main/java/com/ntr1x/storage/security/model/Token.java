@@ -32,19 +32,19 @@ import lombok.Setter;
 @CascadeOnDelete
 public class Token extends Resource {
 
-	public static final int SIGNUP = 1 << 0;
-	public static final int SIGNIN = 1 << 1;
-	public static final int PASSWD = 1 << 2;
-	public static final int EMAIL = 1 << 3;
-	public static final int RECOVER = 1 << 4;
+    public static final int SIGNUP = 1 << 0;
+    public static final int SIGNIN = 1 << 1;
+    public static final int PASSWD = 1 << 2;
+    public static final int EMAIL = 1 << 3;
+    public static final int RECOVER = 1 << 4;
 
-	@ManyToOne(fetch = FetchType.EAGER, optional = false)
-	@JoinColumn(name = "UserId", nullable = false, updatable = true)
-	private User user;
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "UserId", nullable = false, updatable = true)
+    private User user;
 
-	@Column(name = "Type", nullable = false)
-	private int type;
+    @Column(name = "Type", nullable = false)
+    private int type;
 
-	@Column(name = "Token", nullable = false)
-	private int token;
+    @Column(name = "Token", nullable = false)
+    private int token;
 }

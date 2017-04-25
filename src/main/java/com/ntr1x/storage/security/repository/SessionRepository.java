@@ -14,5 +14,5 @@ public interface SessionRepository extends JpaRepository<Session, Long> {
       + " WHERE (:scope IS NULL OR s.scope = :scope)"
       + "   AND (s.id = :id)"
     )
-	Session select(@Param("scope") Long scope, @Param("id") long id);
+    Session select(@Param("scope") Long scope, @Param("id") long id);
 }

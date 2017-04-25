@@ -33,7 +33,7 @@ public class ContextService implements IContextService {
     
     @Override
     public IUserScope getUserScope() {
-    	return (IUserScope) request.getAttribute(IUserScope.class.getName());
+        return (IUserScope) request.getAttribute(IUserScope.class.getName());
     }
     
     @Override
@@ -48,7 +48,7 @@ public class ContextService implements IContextService {
             || principal.getSession() == null
             || principal.getUser() == null
         ) {
-        	throw new NotAuthorizedException("No active session");
+            throw new NotAuthorizedException("No active session");
         }
             
         switch (role) {

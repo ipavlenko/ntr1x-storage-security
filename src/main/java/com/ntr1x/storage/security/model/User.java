@@ -32,52 +32,52 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity
 @Table(
-	name = "users",
-	indexes= {
-		@Index(columnList = "Scope,Origin,Identity,Email", unique = true),
-	}
+    name = "users",
+    indexes= {
+        @Index(columnList = "Scope,Origin,Identity,Email", unique = true),
+    }
 )
 @PrimaryKeyJoinColumn(name = "ResourceId", referencedColumnName = "Id")
 @CascadeOnDelete
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 public class User extends Resource {
-	
-	@Column(name = "Origin", nullable = false)
-	private String origin;
-	
-	@Convert(converter = EncryptedConverter.class)
-	@Column(name = "Identity", nullable = false)
-	private String identity;
-	
-	@Convert(converter = EncryptedConverter.class)
-	@Column(name = "Name", nullable = false)
-	private String name;
-	
-	@Convert(converter = EncryptedConverter.class)
-	@Column(name = "Email", nullable = false)
-	private String email;
-	
-	@XmlTransient
-	@Convert(converter = EncryptedConverter.class)
-	@Column(name = "EmailNew", nullable = true)
-	private String emailNew;
-	
-	@Column(name = "EmailConfirmed")
-	private boolean emailConfirmed;
-	
-	@Column(name = "Registered")
-	@XmlJavaTypeAdapter(LocalDateTimeConverter.class)
-	@ApiModelProperty(example="2016-10-07T04:05")
-	private LocalDateTime registered;
-	
-	@XmlTransient
-	@Column(name = "Random")
-	@ApiModelProperty(hidden = true)
-	private Integer random;
-	
-	@XmlTransient
-	@Column(name = "Pwdhash")
-	@ApiModelProperty(hidden = true)
-	private String pwdhash;
+    
+    @Column(name = "Origin", nullable = false)
+    private String origin;
+    
+    @Convert(converter = EncryptedConverter.class)
+    @Column(name = "Identity", nullable = false)
+    private String identity;
+    
+    @Convert(converter = EncryptedConverter.class)
+    @Column(name = "Name", nullable = false)
+    private String name;
+    
+    @Convert(converter = EncryptedConverter.class)
+    @Column(name = "Email", nullable = false)
+    private String email;
+    
+    @XmlTransient
+    @Convert(converter = EncryptedConverter.class)
+    @Column(name = "EmailNew", nullable = true)
+    private String emailNew;
+    
+    @Column(name = "EmailConfirmed")
+    private boolean emailConfirmed;
+    
+    @Column(name = "Registered")
+    @XmlJavaTypeAdapter(LocalDateTimeConverter.class)
+    @ApiModelProperty(example="2016-10-07T04:05")
+    private LocalDateTime registered;
+    
+    @XmlTransient
+    @Column(name = "Random")
+    @ApiModelProperty(hidden = true)
+    private Integer random;
+    
+    @XmlTransient
+    @Column(name = "Pwdhash")
+    @ApiModelProperty(hidden = true)
+    private String pwdhash;
 }

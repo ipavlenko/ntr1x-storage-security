@@ -56,470 +56,470 @@ import lombok.NoArgsConstructor;
 @Component
 public class SecurityResource {
 
-	@Inject
-	private EntityManager em;
+    @Inject
+    private EntityManager em;
 
-	@Inject
-	private IUserService users;
-
-	@Inject
-	private ISecurityService security;
-
-	@Inject
-	private ISecurityMailService mail;
-
-	@Inject
-	private IAsyncService async;
-
-	@Inject
-	private IPageService pages;
-	
-	@Inject
-	private Provider<IUserScope> scope;
+    @Inject
+    private IUserService users;
+
+    @Inject
+    private ISecurityService security;
+
+    @Inject
+    private ISecurityMailService mail;
+
+    @Inject
+    private IAsyncService async;
+
+    @Inject
+    private IPageService pages;
+    
+    @Inject
+    private Provider<IUserScope> scope;
 
-	@Value("${app.public.host}")
-	private String host;
+    @Value("${app.public.host}")
+    private String host;
 
-	@POST
-	@Path("/signin")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	@Transactional
-	public SigninResponse signin(@Valid SigninRequest signin) {
-
-		signin.email = signin.email.toLowerCase();
-
-		User u = users.select(scope.get().getId(), "local", null, signin.email.toLowerCase()); {
-
-			if (u == null) {
-				throw new ForbiddenException("Wrong credentials");
-			}
-
-			if (!u.getPwdhash().equals(security.hashPassword(u.getRandom(), signin.password))) {
-				throw new ForbiddenException("Wrong credentials");
-			}
-		}
-
-		Session session = new Session(); {
-
-			session.setScope(scope.get().getId());
-			session.setUser(u);
-			session.setSignature(security.randomInt());
-
-			em.persist(session);
-			em.flush();
-
-			security.register(session, ResourceUtils.alias(u, "sessions/i", session));
-
-			em.merge(session);
-			em.flush();
-		}
-
-		String token = security.toString(
-			new ISecurityService.SecuritySession(
-				session.getId(),
-				session.getSignature()
-			)
-		);
-
-		return new SigninResponse(token, u);
-	}
-
-	@GET
-	@Path("/social")
-	@Produces(MediaType.TEXT_HTML)
-	@Transactional
-	public String social() throws Exception {
-
-		return pages.page("social", null);
-	}
-
-	@XmlRootElement
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class ULogin {
-
-		public String network;
-		public String identity;
-
-		@XmlAttribute(name = "first_name")
-		public String name;
-
-		@XmlAttribute(name = "last_name")
-		public String surname;
-	}
-
-	@POST
-	@Path("/social")
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	@Produces(MediaType.APPLICATION_JSON)
-	@Transactional
-	public SigninResponse doSocial(@FormParam("token") String token) throws Exception {
-
-		ULogin ulogin = ClientBuilder.newClient()
-			.register(ConverterProvider.class)
-			.register(JacksonFeature.class)
-			.register(MultiPartFeature.class)
-			.target(String.format("http://ulogin.ru/token.php"))
-			.queryParam("token", token)
-			.queryParam("host", host)
-			.request(MediaType.APPLICATION_JSON)
-			.get(ULogin.class)
-		;
-
-		if (ulogin == null || ulogin.identity == null || ulogin.network == null) {
-
-			throw new BadRequestException("Wrong credentials");
-		}
-
-		User u = users.select(scope.get().getId(), ulogin.network, ulogin.identity, null);
-
-		if (u == null) {
-
-			u = users.create(
-				scope.get().getId(),
-				new IUserService.UserCreate(
-					ulogin.network,
-					ulogin.identity,
-					"",
-					null,
-					String.format("%s %s", ulogin.name, ulogin.surname),
-					false,
-					null
-				)
-			);
-		}
-
-		Session session = new Session(); {
-			
-			session.setScope(scope.get().getId());
-			session.setUser(u);
-			session.setSignature(security.randomInt());
-		}
-
-		em.persist(session);
-		em.flush();
-
-		String value = security.toString(
-			new ISecurityService.SecuritySession(
-				session.getId(),
-				session.getSignature()
-			)
-		);
-
-		return new SigninResponse(value, u);
-	}
-
-	@POST
-	@Path("/recover")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	@Transactional
-	public RecoverResponse recover(@Valid RecoverRequest recover) {
-
-		recover.email = recover.email.toLowerCase();
-
-		User user = users.select(scope.get().getId(), "local", null, recover.email);
-
-		if (user == null) {
-			throw new BadRequestException("No such user");
-		}
-
-		Token token = new Token(); {
-
-			token.setScope(scope.get().getId());
-			token.setUser(user);
-			token.setType(Token.RECOVER);
-			token.setToken(security.randomInt());
-
-			em.persist(token);
-			em.flush();
-		}
-
-		MailScope ms = scope.get().get(MailScope.class);
-		
-		async.submit(() -> {
-			mail.sendRecoverConfirmation(
-				new ISecurityMailService.PasswdConfirmation(
-					ms,
-					user.getEmail(),
-					security.toString(
-						new ISecurityService.SecurityToken(
-							token.getId(),
-							token.getType(),
-							token.getToken()
-						)
-					)
-				)
-			);
-		});
-
-		return new RecoverResponse();
-	}
-	
-	@PUT
-	@Path("/passwd")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	@Transactional
-	public SigninResponse passwd(@Valid PasswdTokenRequest passwd) {
-		
-		ISecurityService.SecurityToken st = security.parseToken(passwd.token);
-
-		Token token = security.selectToken(scope.get().getId(), st.id);
-
-		if (token.getType() != Token.PASSWD) {
-			throw new BadRequestException("Invalid token");
-		}
-
-		em.remove(token);
-
-		int random = security.randomInt();
-
-		User user = token.getUser();
-		
-		user.setPwdhash(security.hashPassword(random, passwd.newPassword));
-		user.setRandom(random);
-
-		em.persist(user);
-		em.flush();
-
-		MailScope ms = scope.get().get(MailScope.class);
-		
-		async.submit(() -> {
-			mail.sendPasswdNotification(
-				new ISecurityMailService.PasswdNotification(
-					ms,
-					user.getEmail()
-				)
-			);
-		});
-
-		Session session = new Session(); {
-			
-			session.setScope(scope.get().getId());
-			session.setUser(user);
-			session.setSignature(security.randomInt());
-		}
-
-		em.persist(session);
-		em.flush();
-
-		String sessionToken = security.toString(
-			new ISecurityService.SecuritySession(
-				session.getId(),
-				session.getSignature()
-			)
-		);
-
-		return new SigninResponse(sessionToken, user);
-	}
-
-	@GET
-	@Path("/recover/confirm/{key}")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Transactional
-	public RecoverResponse doRecoverConfirm(@PathParam("key") String key) {
-
-		ISecurityService.SecurityToken st = security.parseToken(key);
-
-		User user = null; {
-			
-			Token token = security.selectToken(scope.get().getId(), st.id);
-	
-			if (token.getType() != Token.RECOVER || token.getToken() != st.getSignature()) {
-				throw new BadRequestException("Invalid token");
-			}
-	
-			user = token.getUser();
-	
-			user.setEmailConfirmed(true);
-			em.merge(user);
-			
-			em.remove(token);
-		}
-
-		Token token = new Token(); {
-
-			token.setScope(scope.get().getId());
-			token.setUser(user);
-			token.setType(Token.PASSWD);
-			token.setToken(security.randomInt());
-
-			em.persist(token);
-			em.flush();
-		}
-
-		String passwdToken = security.toString(
-			new ISecurityService.SecurityToken(
-				token.getId(),
-				token.getType(),
-				token.getToken()
-			)
-		);
-
-		return new RecoverResponse(passwdToken);
-	}
-	
-	@POST
-	@Path("/signup")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	@Transactional
-	public SignupResponse signup(@Valid SignupRequest signup) {
-
-		signup.email = signup.email.toLowerCase();
-
-		User existent = users.select(scope.get().getId(), "local", "", signup.email);
-		
-		if (existent != null) {
-			throw new BadRequestException("User exists");
-		}
-
-		User u = users.create(
-			scope.get().getId(),
-			new IUserService.UserCreate(
-				"local",
-				"",
-				signup.email,
-				signup.password,
-				signup.name,
-				false,
-				null
-			)
-		);
-
-		Token token = new Token(); {
-
-			token.setScope(scope.get().getId());
-			token.setUser(u);
-			token.setType(Token.SIGNUP);
-			token.setToken(security.randomInt());
-
-			em.persist(token);
-			em.flush();
-		}
-
-		MailScope ms = scope.get().get(MailScope.class);
-		
-		async.submit(() -> {
-			mail.sendSignupConfirmation(
-				new ISecurityMailService.SignupConfirmation(
-					ms,
-					u.getEmail(),
-					security.toString(
-						new ISecurityService.SecurityToken(
-							token.getId(),
-							token.getType(),
-							token.getToken()
-						)
-					)
-				)
-			);
-		});
-
-		return new SignupResponse(u);
-	}
-
-	@GET
-	@Path("/signup/confirm/{key}")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Transactional
-	public SigninResponse doSignupConfirm(@PathParam("key") String key) {
-
-		ISecurityService.SecurityToken st = security.parseToken(key);
-
-		Token token = security.selectToken(scope.get().getId(), st.id);
-
-		if (token == null || token.getType() != Token.SIGNUP) {
-			throw new BadRequestException("Invalid token");
-		}
-
-		User user = token != null && token.getToken() == st.getSignature() ? token.getUser() : null;
-
-		if (user != null) {
-
-			user.setEmailConfirmed(true);
-			em.merge(user);
-		}
-
-		em.remove(token);
-
-		Session session = new Session(); {
-			
-			session.setScope(scope.get().getId());
-			session.setUser(user);
-			session.setSignature(security.randomInt());
-		}
-
-		em.persist(session);
-		em.flush();
-
-		String sessionToken = security.toString(
-			new ISecurityService.SecuritySession(
-				session.getId(),
-				session.getSignature()
-			)
-		);
-
-		return new SigninResponse(sessionToken, user);
-	}
-
-	@GET
-	@Path("/email/confirm/{key}")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Transactional
-	public SigninResponse doEmailConfirm(@PathParam("key") String key) {
-
-		ISecurityService.SecurityToken st = security.parseToken(key);
-
-		User user = null; {
-
-			Token token = security.selectToken(scope.get().getId(), st.id);
-
-			if (token.getType() != Token.EMAIL) {
-				throw new BadRequestException("Invalid token");
-			}
-
-			user = token != null && token.getToken() == st.getSignature() ? token.getUser() : null;
-
-			if (user == null) {
-				throw new BadRequestException("User not found");
-			}
-
-			User existent = users.select(scope.get().getId(), "local", "", user.getEmailNew());
-			
-			if (existent != null) {
-				throw new BadRequestException("Duplicate email");
-			}
-
-			user.setEmail(user.getEmailNew());
-			user.setEmailNew(null);
-			user.setEmailConfirmed(true);
-
-			em.merge(user);
-			em.flush();
-
-			em.remove(token);
-		}
-
-		Session session = new Session(); {
-			
-			session.setScope(scope.get().getId());
-			session.setUser(user);
-			session.setSignature(security.randomInt());
-		}
-
-		em.persist(session);
-		em.flush();
-
-		String sessionToken = security.toString(
-			new ISecurityService.SecuritySession(
-				session.getId(),
-				session.getSignature()
-			)
-		);
-
-		return new SigninResponse(sessionToken, user);
-	}
+    @POST
+    @Path("/signin")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public SigninResponse signin(@Valid SigninRequest signin) {
+
+        signin.email = signin.email.toLowerCase();
+
+        User u = users.select(scope.get().getId(), "local", null, signin.email.toLowerCase()); {
+
+            if (u == null) {
+                throw new ForbiddenException("Wrong credentials");
+            }
+
+            if (!u.getPwdhash().equals(security.hashPassword(u.getRandom(), signin.password))) {
+                throw new ForbiddenException("Wrong credentials");
+            }
+        }
+
+        Session session = new Session(); {
+
+            session.setScope(scope.get().getId());
+            session.setUser(u);
+            session.setSignature(security.randomInt());
+
+            em.persist(session);
+            em.flush();
+
+            security.register(session, ResourceUtils.alias(u, "sessions/i", session));
+
+            em.merge(session);
+            em.flush();
+        }
+
+        String token = security.toString(
+            new ISecurityService.SecuritySession(
+                session.getId(),
+                session.getSignature()
+            )
+        );
+
+        return new SigninResponse(token, u);
+    }
+
+    @GET
+    @Path("/social")
+    @Produces(MediaType.TEXT_HTML)
+    @Transactional
+    public String social() throws Exception {
+
+        return pages.page("social", null);
+    }
+
+    @XmlRootElement
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ULogin {
+
+        public String network;
+        public String identity;
+
+        @XmlAttribute(name = "first_name")
+        public String name;
+
+        @XmlAttribute(name = "last_name")
+        public String surname;
+    }
+
+    @POST
+    @Path("/social")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public SigninResponse doSocial(@FormParam("token") String token) throws Exception {
+
+        ULogin ulogin = ClientBuilder.newClient()
+            .register(ConverterProvider.class)
+            .register(JacksonFeature.class)
+            .register(MultiPartFeature.class)
+            .target(String.format("http://ulogin.ru/token.php"))
+            .queryParam("token", token)
+            .queryParam("host", host)
+            .request(MediaType.APPLICATION_JSON)
+            .get(ULogin.class)
+        ;
+
+        if (ulogin == null || ulogin.identity == null || ulogin.network == null) {
+
+            throw new BadRequestException("Wrong credentials");
+        }
+
+        User u = users.select(scope.get().getId(), ulogin.network, ulogin.identity, null);
+
+        if (u == null) {
+
+            u = users.create(
+                scope.get().getId(),
+                new IUserService.UserCreate(
+                    ulogin.network,
+                    ulogin.identity,
+                    "",
+                    null,
+                    String.format("%s %s", ulogin.name, ulogin.surname),
+                    false,
+                    null
+                )
+            );
+        }
+
+        Session session = new Session(); {
+            
+            session.setScope(scope.get().getId());
+            session.setUser(u);
+            session.setSignature(security.randomInt());
+        }
+
+        em.persist(session);
+        em.flush();
+
+        String value = security.toString(
+            new ISecurityService.SecuritySession(
+                session.getId(),
+                session.getSignature()
+            )
+        );
+
+        return new SigninResponse(value, u);
+    }
+
+    @POST
+    @Path("/recover")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public RecoverResponse recover(@Valid RecoverRequest recover) {
+
+        recover.email = recover.email.toLowerCase();
+
+        User user = users.select(scope.get().getId(), "local", null, recover.email);
+
+        if (user == null) {
+            throw new BadRequestException("No such user");
+        }
+
+        Token token = new Token(); {
+
+            token.setScope(scope.get().getId());
+            token.setUser(user);
+            token.setType(Token.RECOVER);
+            token.setToken(security.randomInt());
+
+            em.persist(token);
+            em.flush();
+        }
+
+        MailScope ms = scope.get().get(MailScope.class);
+        
+        async.submit(() -> {
+            mail.sendRecoverConfirmation(
+                new ISecurityMailService.PasswdConfirmation(
+                    ms,
+                    user.getEmail(),
+                    security.toString(
+                        new ISecurityService.SecurityToken(
+                            token.getId(),
+                            token.getType(),
+                            token.getToken()
+                        )
+                    )
+                )
+            );
+        });
+
+        return new RecoverResponse();
+    }
+    
+    @PUT
+    @Path("/passwd")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public SigninResponse passwd(@Valid PasswdTokenRequest passwd) {
+        
+        ISecurityService.SecurityToken st = security.parseToken(passwd.token);
+
+        Token token = security.selectToken(scope.get().getId(), st.id);
+
+        if (token.getType() != Token.PASSWD) {
+            throw new BadRequestException("Invalid token");
+        }
+
+        em.remove(token);
+
+        int random = security.randomInt();
+
+        User user = token.getUser();
+        
+        user.setPwdhash(security.hashPassword(random, passwd.newPassword));
+        user.setRandom(random);
+
+        em.persist(user);
+        em.flush();
+
+        MailScope ms = scope.get().get(MailScope.class);
+        
+        async.submit(() -> {
+            mail.sendPasswdNotification(
+                new ISecurityMailService.PasswdNotification(
+                    ms,
+                    user.getEmail()
+                )
+            );
+        });
+
+        Session session = new Session(); {
+            
+            session.setScope(scope.get().getId());
+            session.setUser(user);
+            session.setSignature(security.randomInt());
+        }
+
+        em.persist(session);
+        em.flush();
+
+        String sessionToken = security.toString(
+            new ISecurityService.SecuritySession(
+                session.getId(),
+                session.getSignature()
+            )
+        );
+
+        return new SigninResponse(sessionToken, user);
+    }
+
+    @GET
+    @Path("/recover/confirm/{key}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public RecoverResponse doRecoverConfirm(@PathParam("key") String key) {
+
+        ISecurityService.SecurityToken st = security.parseToken(key);
+
+        User user = null; {
+            
+            Token token = security.selectToken(scope.get().getId(), st.id);
+    
+            if (token.getType() != Token.RECOVER || token.getToken() != st.getSignature()) {
+                throw new BadRequestException("Invalid token");
+            }
+    
+            user = token.getUser();
+    
+            user.setEmailConfirmed(true);
+            em.merge(user);
+            
+            em.remove(token);
+        }
+
+        Token token = new Token(); {
+
+            token.setScope(scope.get().getId());
+            token.setUser(user);
+            token.setType(Token.PASSWD);
+            token.setToken(security.randomInt());
+
+            em.persist(token);
+            em.flush();
+        }
+
+        String passwdToken = security.toString(
+            new ISecurityService.SecurityToken(
+                token.getId(),
+                token.getType(),
+                token.getToken()
+            )
+        );
+
+        return new RecoverResponse(passwdToken);
+    }
+    
+    @POST
+    @Path("/signup")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public SignupResponse signup(@Valid SignupRequest signup) {
+
+        signup.email = signup.email.toLowerCase();
+
+        User existent = users.select(scope.get().getId(), "local", "", signup.email);
+        
+        if (existent != null) {
+            throw new BadRequestException("User exists");
+        }
+
+        User u = users.create(
+            scope.get().getId(),
+            new IUserService.UserCreate(
+                "local",
+                "",
+                signup.email,
+                signup.password,
+                signup.name,
+                false,
+                null
+            )
+        );
+
+        Token token = new Token(); {
+
+            token.setScope(scope.get().getId());
+            token.setUser(u);
+            token.setType(Token.SIGNUP);
+            token.setToken(security.randomInt());
+
+            em.persist(token);
+            em.flush();
+        }
+
+        MailScope ms = scope.get().get(MailScope.class);
+        
+        async.submit(() -> {
+            mail.sendSignupConfirmation(
+                new ISecurityMailService.SignupConfirmation(
+                    ms,
+                    u.getEmail(),
+                    security.toString(
+                        new ISecurityService.SecurityToken(
+                            token.getId(),
+                            token.getType(),
+                            token.getToken()
+                        )
+                    )
+                )
+            );
+        });
+
+        return new SignupResponse(u);
+    }
+
+    @GET
+    @Path("/signup/confirm/{key}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public SigninResponse doSignupConfirm(@PathParam("key") String key) {
+
+        ISecurityService.SecurityToken st = security.parseToken(key);
+
+        Token token = security.selectToken(scope.get().getId(), st.id);
+
+        if (token == null || token.getType() != Token.SIGNUP) {
+            throw new BadRequestException("Invalid token");
+        }
+
+        User user = token != null && token.getToken() == st.getSignature() ? token.getUser() : null;
+
+        if (user != null) {
+
+            user.setEmailConfirmed(true);
+            em.merge(user);
+        }
+
+        em.remove(token);
+
+        Session session = new Session(); {
+            
+            session.setScope(scope.get().getId());
+            session.setUser(user);
+            session.setSignature(security.randomInt());
+        }
+
+        em.persist(session);
+        em.flush();
+
+        String sessionToken = security.toString(
+            new ISecurityService.SecuritySession(
+                session.getId(),
+                session.getSignature()
+            )
+        );
+
+        return new SigninResponse(sessionToken, user);
+    }
+
+    @GET
+    @Path("/email/confirm/{key}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public SigninResponse doEmailConfirm(@PathParam("key") String key) {
+
+        ISecurityService.SecurityToken st = security.parseToken(key);
+
+        User user = null; {
+
+            Token token = security.selectToken(scope.get().getId(), st.id);
+
+            if (token.getType() != Token.EMAIL) {
+                throw new BadRequestException("Invalid token");
+            }
+
+            user = token != null && token.getToken() == st.getSignature() ? token.getUser() : null;
+
+            if (user == null) {
+                throw new BadRequestException("User not found");
+            }
+
+            User existent = users.select(scope.get().getId(), "local", "", user.getEmailNew());
+            
+            if (existent != null) {
+                throw new BadRequestException("Duplicate email");
+            }
+
+            user.setEmail(user.getEmailNew());
+            user.setEmailNew(null);
+            user.setEmailConfirmed(true);
+
+            em.merge(user);
+            em.flush();
+
+            em.remove(token);
+        }
+
+        Session session = new Session(); {
+            
+            session.setScope(scope.get().getId());
+            session.setUser(user);
+            session.setSignature(security.randomInt());
+        }
+
+        em.persist(session);
+        em.flush();
+
+        String sessionToken = security.toString(
+            new ISecurityService.SecuritySession(
+                session.getId(),
+                session.getSignature()
+            )
+        );
+
+        return new SigninResponse(sessionToken, user);
+    }
 }

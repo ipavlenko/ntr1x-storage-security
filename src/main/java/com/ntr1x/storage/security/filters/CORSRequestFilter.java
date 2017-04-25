@@ -12,12 +12,12 @@ import javax.ws.rs.ext.Provider;
 @PreMatching
 public class CORSRequestFilter implements ContainerRequestFilter {
 
-	@Override
-	public void filter(ContainerRequestContext requestContext) throws IOException {
-		
-		if (requestContext.getRequest().getMethod().equals("OPTIONS")) {
-			requestContext.abortWith(Response.status(Response.Status.OK).build());
+    @Override
+    public void filter(ContainerRequestContext requestContext) throws IOException {
+        
+        if (requestContext.getRequest().getMethod().equals("OPTIONS")) {
+            requestContext.abortWith(Response.status(Response.Status.OK).build());
         }
-	}
-	
+    }
+    
 }

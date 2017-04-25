@@ -63,12 +63,12 @@ public class SecurityService implements ISecurityService {
     
     @Override
     public Session selectSession(Long scope, long id) {
-    	return sessions.select(scope, id);
+        return sessions.select(scope, id);
     }
     
     @Override
     public Token selectToken(Long scope, long id) {
-    	return tokens.select(scope, id);
+        return tokens.select(scope, id);
     }
     
     @Override
@@ -217,7 +217,7 @@ public class SecurityService implements ISecurityService {
     public boolean isUserInRole(Long scope, User user, String resource, String action) {
         
         return grants.check(
-    		scope,
+            scope,
             user.getId(),
             resource,
             action
@@ -236,13 +236,13 @@ public class SecurityService implements ISecurityService {
     @Override
     public void grant(long scope, User user, String pattern, String action) {
         
-    	if (user == null) {
-    		return;
-    	}
-    	
+        if (user == null) {
+            return;
+        }
+        
         Grant grant = new Grant(); {
             
-        	grant.setScope(scope);
+            grant.setScope(scope);
             grant.setUser(user);
             grant.setPattern(pattern);
             grant.setAction(action);

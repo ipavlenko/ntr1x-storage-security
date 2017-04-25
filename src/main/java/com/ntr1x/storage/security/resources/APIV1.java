@@ -10,21 +10,21 @@ import io.swagger.models.auth.ApiKeyAuthDefinition;
 import io.swagger.models.auth.In;
 
 @SwaggerDefinition(
-	info = @Info(
-		title = "Storage API",
-		description = "Storage API",
-		version = "1.0.0"
-	),
-	schemes = { SwaggerDefinition.Scheme.HTTP, SwaggerDefinition.Scheme.HTTPS },
-	tags = {
-		@Tag(name = "Me",				description = "User data accessors"),
-		@Tag(name = "Security",     	description = "Registration & Authorization"),
-		@Tag(name = "Resources",    	description = "Universal resource access"),
-		@Tag(name = "Uploads",     		description = "Files & Images"),
-		@Tag(name = "Media",        	description = "Publications & Events"),
-        @Tag(name = "Store",        	description = "Offers & Orders"),
-		@Tag(name = "Archery",     		description = "Archery portals"),
-	}
+    info = @Info(
+        title = "Storage API",
+        description = "Storage API",
+        version = "1.0.0"
+    ),
+    schemes = { SwaggerDefinition.Scheme.HTTP, SwaggerDefinition.Scheme.HTTPS },
+    tags = {
+        @Tag(name = "Me",                description = "User data accessors"),
+        @Tag(name = "Security",         description = "Registration & Authorization"),
+        @Tag(name = "Resources",        description = "Universal resource access"),
+        @Tag(name = "Uploads",             description = "Files & Images"),
+        @Tag(name = "Media",            description = "Publications & Events"),
+        @Tag(name = "Store",            description = "Offers & Orders"),
+        @Tag(name = "Archery",             description = "Archery portals"),
+    }
 )
 public class APIV1 implements ReaderListener {
 

@@ -56,140 +56,140 @@ public interface ISecurityService {
     }
     
     @XmlRootElement
-	@NoArgsConstructor
-	public static class SignoutResponse {
-	}
+    @NoArgsConstructor
+    public static class SignoutResponse {
+    }
 
-	@XmlRootElement
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class UpdateRequest {
+    @XmlRootElement
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UpdateRequest {
 
-		@NotEmpty
-		public String name;
-	}
+        @NotEmpty
+        public String name;
+    }
 
-	@XmlRootElement
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class ValidateEmailRequest {
+    @XmlRootElement
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ValidateEmailRequest {
 
-		@NotEmpty
-		public String token;
-	}
+        @NotEmpty
+        public String token;
+    }
 
-	@XmlRootElement
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class PasswdRequest {
+    @XmlRootElement
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class PasswdRequest {
 
-		@NotEmpty
-		@Length(min = 6)
-		public String password;
+        @NotEmpty
+        @Length(min = 6)
+        public String password;
 
-		@NotEmpty
-		@Length(min = 6)
-		public String newPassword;
+        @NotEmpty
+        @Length(min = 6)
+        public String newPassword;
 
-	}
+    }
 
-	@XmlRootElement
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class PasswdTokenRequest {
+    @XmlRootElement
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class PasswdTokenRequest {
 
-		@NotEmpty
-		public String token;
+        @NotEmpty
+        public String token;
 
-		@NotEmpty
-		@Length(min = 6)
-		public String newPassword;
-	}
+        @NotEmpty
+        @Length(min = 6)
+        public String newPassword;
+    }
 
-	@XmlRootElement
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class EmailRequest {
+    @XmlRootElement
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class EmailRequest {
 
-		@NotEmpty
-		@Email
-		public String email;
+        @NotEmpty
+        @Email
+        public String email;
 
-		@NotEmpty
-		@Length(min = 6)
-		public String password;
-	}
+        @NotEmpty
+        @Length(min = 6)
+        public String password;
+    }
 
-	@XmlRootElement
-	@NoArgsConstructor
-	// @AllArgsConstructor
-	public static class EmailResponse {
-	}
-	
+    @XmlRootElement
+    @NoArgsConstructor
+    // @AllArgsConstructor
+    public static class EmailResponse {
+    }
+    
 
-	@XmlRootElement
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class SigninRequest {
+    @XmlRootElement
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SigninRequest {
 
-		@NotEmpty
-		@Email
-		public String email;
+        @NotEmpty
+        @Email
+        public String email;
 
-		@NotEmpty
-		@Length(min = 6)
-		public String password;
-	}
+        @NotEmpty
+        @Length(min = 6)
+        public String password;
+    }
 
-	@NoArgsConstructor
-	@AllArgsConstructor
-	@XmlRootElement
-	public static class SigninResponse {
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @XmlRootElement
+    public static class SigninResponse {
 
-		public String token;
-		public User user;
-	}
-	
-	@NoArgsConstructor
-	@AllArgsConstructor
-	@XmlRootElement
-	public static class RecoverResponse {
+        public String token;
+        public User user;
+    }
+    
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @XmlRootElement
+    public static class RecoverResponse {
 
-		public String passwdToken;
-	}
+        public String passwdToken;
+    }
 
-	@XmlRootElement
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class SignupRequest {
+    @XmlRootElement
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SignupRequest {
 
-		@NotEmpty
-		@Email
-		public String email;
+        @NotEmpty
+        @Email
+        public String email;
 
-		@NotEmpty
-		public String name;
+        @NotEmpty
+        public String name;
 
-		@NotEmpty
-		@Length(min = 6)
-		public String password;
-	}
+        @NotEmpty
+        @Length(min = 6)
+        public String password;
+    }
 
-	@XmlRootElement
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class SignupResponse {
+    @XmlRootElement
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SignupResponse {
 
-		public User user;
-	}
+        public User user;
+    }
 
-	@XmlRootElement
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class RecoverRequest {
+    @XmlRootElement
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class RecoverRequest {
 
-		@NotEmpty
-		@Email
-		public String email;
-	}
+        @NotEmpty
+        @Email
+        public String email;
+    }
 }

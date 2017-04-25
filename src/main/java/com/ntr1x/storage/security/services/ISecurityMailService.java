@@ -7,16 +7,16 @@ import lombok.NoArgsConstructor;
 
 public interface ISecurityMailService {
 
-	void sendSignupConfirmation(SignupConfirmation message);
+    void sendSignupConfirmation(SignupConfirmation message);
     void sendRecoverConfirmation(PasswdConfirmation message);
     void sendPasswdNotification(PasswdNotification message);
-	void sendEmailConfirmation(EmailConfirmation message);
-	
-	@NoArgsConstructor
+    void sendEmailConfirmation(EmailConfirmation message);
+    
+    @NoArgsConstructor
     @AllArgsConstructor
     public static final class SignupConfirmation {
         
-    	public MailScope scope;
+        public MailScope scope;
         public String email;
         public String confirm;
     }
@@ -25,7 +25,7 @@ public interface ISecurityMailService {
     @AllArgsConstructor
     public static final class PasswdConfirmation {
         
-    	public MailScope scope;
+        public MailScope scope;
         public String email;
         public String confirm;
     }
@@ -34,7 +34,7 @@ public interface ISecurityMailService {
     @AllArgsConstructor
     public static final class PasswdNotification {
         
-    	public MailScope scope;
+        public MailScope scope;
         public String email;
     }
 
@@ -42,7 +42,7 @@ public interface ISecurityMailService {
     @AllArgsConstructor
     public static final class EmailConfirmation {
         
-    	public MailScope scope;
+        public MailScope scope;
         public String email;
         public String confirm;
     }

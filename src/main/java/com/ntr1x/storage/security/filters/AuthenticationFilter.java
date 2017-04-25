@@ -27,57 +27,57 @@ import lombok.extern.slf4j.Slf4j;
 @Priority(Priorities.AUTHENTICATION)
 public class AuthenticationFilter implements ContainerRequestFilter {
 
-	@Inject
-	private HttpServletRequest request;
+    @Inject
+    private HttpServletRequest request;
 
-	@Inject
-	private ISecurityService security;
-	
-	@Inject
-	private ISessionService sessions;
-	
-	@Override
-	@Transactional
-	public void filter(ContainerRequestContext rc) { 
+    @Inject
+    private ISecurityService security;
+    
+    @Inject
+    private ISessionService sessions;
+    
+    @Override
+    @Transactional
+    public void filter(ContainerRequestContext rc) { 
 
-		if (HttpMethod.OPTIONS.equals(rc.getMethod())) {
-			return;
-		}
-		
-//		IUserScope scope = (IUserScope) request.getAttribute(IUserScope.class.getName());
-		
-		UserPrincipal principal = setupUserPrincipal(rc/*, scope*/);
+        if (HttpMethod.OPTIONS.equals(rc.getMethod())) {
+            return;
+        }
+        
+//        IUserScope scope = (IUserScope) request.getAttribute(IUserScope.class.getName());
+        
+        UserPrincipal principal = setupUserPrincipal(rc/*, scope*/);
 
-		request.setAttribute(IUserPrincipal.class.getName(), principal);
-	}
-	
-	private UserPrincipal setupUserPrincipal(ContainerRequestContext rc/*, IUserScope scope*/) {
+        request.setAttribute(IUserPrincipal.class.getName(), principal);
+    }
+    
+    private UserPrincipal setupUserPrincipal(ContainerRequestContext rc/*, IUserScope scope*/) {
 
-		try {
+        try {
 
-			String value = rc.getHeaderString("Authorization");
+            String value = rc.getHeaderString("Authorization");
 
-			if (value != null) {
-			    
-				ISecurityService.SecuritySession parsed = security.parseSession(value);
+            if (value != null) {
+                
+                ISecurityService.SecuritySession parsed = security.parseSession(value);
 
-				Session session = sessions.select(null, parsed.getId());
-				
-				if (session != null && session.getSignature() == parsed.getSignature()) {
+                Session session = sessions.select(null, parsed.getId());
+                
+                if (session != null && session.getSignature() == parsed.getSignature()) {
 
-				    User user = session.getUser();
-				    if (user.isEmailConfirmed()) {
-				    	
-				        return new UserPrincipal(session);
-				    }
-				}
-			}
+                    User user = session.getUser();
+                    if (user.isEmailConfirmed()) {
+                        
+                        return new UserPrincipal(session);
+                    }
+                }
+            }
 
-		} catch (Exception e) {
-			log.error("{}", e);
-			// ignore
-		}
+        } catch (Exception e) {
+            log.error("{}", e);
+            // ignore
+        }
 
-		return new UserPrincipal(null);
-	}
+        return new UserPrincipal(null);
+    }
 }

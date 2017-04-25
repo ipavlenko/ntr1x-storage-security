@@ -25,7 +25,7 @@ public class GrantService implements IGrantService {
                 
                 Grant v = new Grant(); {
                     
-                	v.setScope(user.getScope());
+                    v.setScope(user.getScope());
                     v.setUser(user);
                     v.setPattern(p.pattern);
                     v.setAction(p.allow);
@@ -51,7 +51,7 @@ public class GrantService implements IGrantService {
                         
                         Grant v = new Grant(); {
                             
-                        	v.setScope(user.getScope());
+                            v.setScope(user.getScope());
                             v.setUser(user);
                             v.setPattern(p.pattern);
                             v.setAction(p.allow);

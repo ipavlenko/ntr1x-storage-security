@@ -8,14 +8,14 @@ import com.ntr1x.storage.security.model.Token;
 
 public interface TokenRepository extends JpaRepository<Token, Long> {
 
-	@Query(
+    @Query(
         " SELECT t"
       + " FROM Token t"
       + " WHERE (:scope IS NULL OR t.scope = :scope)"
-      + "	AND (t.id = :id)"
+      + "    AND (t.id = :id)"
     )
     Token select(
-		@Param("scope") Long scope,
-		@Param("id") long id
-	);
+        @Param("scope") Long scope,
+        @Param("id") long id
+    );
 }

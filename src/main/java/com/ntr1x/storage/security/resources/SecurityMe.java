@@ -42,157 +42,157 @@ import io.swagger.annotations.Api;
 @Component
 public class SecurityMe {
 
-	@Inject
-	private EntityManager em;
+    @Inject
+    private EntityManager em;
 
-	@Inject
-	private ISecurityService security;
+    @Inject
+    private ISecurityService security;
 
-	@Inject
-	private ISecurityMailService mail;
+    @Inject
+    private ISecurityMailService mail;
 
-	@Inject
-	private IAsyncService async;
+    @Inject
+    private IAsyncService async;
 
-	@Inject
-	private IUserService users;
+    @Inject
+    private IUserService users;
 
-	@Inject
-	private Provider<IUserPrincipal> principal;
+    @Inject
+    private Provider<IUserPrincipal> principal;
 
-	@Inject
-	private Provider<IUserScope> scope;
+    @Inject
+    private Provider<IUserScope> scope;
 
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	@RolesAllowed({ "auth" })
-	@Transactional
-	public User select() {
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @RolesAllowed({ "auth" })
+    @Transactional
+    public User select() {
 
-		User u = users.select(scope.get().getId(), principal.get().getUser().getId());
-		return u;
-	}
+        User u = users.select(scope.get().getId(), principal.get().getUser().getId());
+        return u;
+    }
 
-	@PUT
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	@RolesAllowed({ "auth" })
-	@Transactional
-	public User update(@Valid UpdateRequest update) {
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @RolesAllowed({ "auth" })
+    @Transactional
+    public User update(@Valid UpdateRequest update) {
 
-		User persisted = users.select(scope.get().getId(), principal.get().getUser().getId());
+        User persisted = users.select(scope.get().getId(), principal.get().getUser().getId());
 
-		persisted.setName(update.name);
+        persisted.setName(update.name);
 
-		em.merge(persisted);
-		em.flush();
+        em.merge(persisted);
+        em.flush();
 
-		return persisted;
-	}
+        return persisted;
+    }
 
-	@PUT
-	@Path("/passwd")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	@RolesAllowed({ "auth" })
-	@Transactional
-	public User passwd(@Valid PasswdRequest passwd) {
+    @PUT
+    @Path("/passwd")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @RolesAllowed({ "auth" })
+    @Transactional
+    public User passwd(@Valid PasswdRequest passwd) {
 
-		User persisted = users.select(scope.get().getId(), principal.get().getUser().getId());
+        User persisted = users.select(scope.get().getId(), principal.get().getUser().getId());
 
-		if (!persisted.getPwdhash().equals(security.hashPassword(persisted.getRandom(), passwd.password))) {
-			throw new ForbiddenException("Wrong credentials");
-		}
+        if (!persisted.getPwdhash().equals(security.hashPassword(persisted.getRandom(), passwd.password))) {
+            throw new ForbiddenException("Wrong credentials");
+        }
 
-		int random = security.randomInt();
+        int random = security.randomInt();
 
-		persisted.setPwdhash(security.hashPassword(random, passwd.newPassword));
-		persisted.setRandom(random);
+        persisted.setPwdhash(security.hashPassword(random, passwd.newPassword));
+        persisted.setRandom(random);
 
-		em.persist(persisted);
-		em.flush();
+        em.persist(persisted);
+        em.flush();
 
-		MailScope ms = scope.get().get(MailScope.class);
-		
-		async.submit(() -> {
-			mail.sendPasswdNotification(
-				new ISecurityMailService.PasswdNotification(
-					ms,
-					persisted.getEmail()
-				)
-			);
-		});
+        MailScope ms = scope.get().get(MailScope.class);
+        
+        async.submit(() -> {
+            mail.sendPasswdNotification(
+                new ISecurityMailService.PasswdNotification(
+                    ms,
+                    persisted.getEmail()
+                )
+            );
+        });
 
-		return persisted;
-	}
+        return persisted;
+    }
 
-	@PUT
-	@Path("/email")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	@RolesAllowed({ "auth" })
-	@Transactional
-	public EmailResponse email(@Valid EmailRequest email) {
+    @PUT
+    @Path("/email")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @RolesAllowed({ "auth" })
+    @Transactional
+    public EmailResponse email(@Valid EmailRequest email) {
 
-		email.email = email.email.toLowerCase();
+        email.email = email.email.toLowerCase();
 
-		User user = users.select(scope.get().getId(), principal.get().getUser().getId());
+        User user = users.select(scope.get().getId(), principal.get().getUser().getId());
 
-		if (!user.getPwdhash().equals(security.hashPassword(user.getRandom(), email.password))) {
-			throw new ForbiddenException("Wrong credentials");
-		}
+        if (!user.getPwdhash().equals(security.hashPassword(user.getRandom(), email.password))) {
+            throw new ForbiddenException("Wrong credentials");
+        }
 
-		user.setEmailNew(email.email);
+        user.setEmailNew(email.email);
 
-		em.merge(user);
-		em.flush();
+        em.merge(user);
+        em.flush();
 
-		Token token = new Token(); {
+        Token token = new Token(); {
 
-			token.setScope(scope.get().getId());
-			token.setUser(user);
-			token.setType(Token.EMAIL);
-			token.setToken(security.randomInt());
+            token.setScope(scope.get().getId());
+            token.setUser(user);
+            token.setType(Token.EMAIL);
+            token.setToken(security.randomInt());
 
-			em.persist(token);
-			em.flush();
-		}
+            em.persist(token);
+            em.flush();
+        }
 
-		MailScope ms = scope.get().get(MailScope.class);
-		
-		async.submit(() -> {
-			mail.sendEmailConfirmation(
-				new ISecurityMailService.EmailConfirmation(
-					ms,
-					user.getEmailNew(),
-					security.toString(
-						new ISecurityService.SecurityToken(
-							token.getId(),
-							token.getType(),
-							token.getToken()
-						)
-					)
-				)
-			);
-		});
+        MailScope ms = scope.get().get(MailScope.class);
+        
+        async.submit(() -> {
+            mail.sendEmailConfirmation(
+                new ISecurityMailService.EmailConfirmation(
+                    ms,
+                    user.getEmailNew(),
+                    security.toString(
+                        new ISecurityService.SecurityToken(
+                            token.getId(),
+                            token.getType(),
+                            token.getToken()
+                        )
+                    )
+                )
+            );
+        });
 
-		return new EmailResponse();
-	}
+        return new EmailResponse();
+    }
 
-	@POST
-	@Path("/signout")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	@Transactional
-	@RolesAllowed({ "auth" })
-	public SignoutResponse signout() {
+    @POST
+    @Path("/signout")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    @RolesAllowed({ "auth" })
+    public SignoutResponse signout() {
 
-		Session s = security.selectSession(scope.get().getId(), principal.get().getSession().getId()); {
+        Session s = security.selectSession(scope.get().getId(), principal.get().getSession().getId()); {
 
-			em.remove(s);
-			em.flush();
-		}
+            em.remove(s);
+            em.flush();
+        }
 
-		return new SignoutResponse();
-	}
+        return new SignoutResponse();
+    }
 }
